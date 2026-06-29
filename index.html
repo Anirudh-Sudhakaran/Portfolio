@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anirudh Sudhakaran | Operations Technical Lead & Automation Portfolio</title>
+  <meta name="description" content="Professional portfolio of Anirudh Sudhakaran, Operations Technical Lead, Automation Specialist and Continuous Improvement expert with 12+ years of experience.">
+  
+  <!-- Tailwind CSS v3 CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- JS Error Logger for Diagnostics -->
+  <script>
+    window.addEventListener('error', function(e) {
+      const errorDiv = document.getElementById('js-diagnostic-error') || document.createElement('div');
+      errorDiv.id = 'js-diagnostic-error';
+      errorDiv.style.position = 'fixed';
+      errorDiv.style.top = '0';
+      errorDiv.style.left = '0';
+      errorDiv.style.width = '100%';
+      errorDiv.style.backgroundColor = '#ef4444';
+      errorDiv.style.color = '#ffffff';
+      errorDiv.style.padding = '12px';
+      errorDiv.style.zIndex = '999999';
+      errorDiv.style.fontFamily = 'monospace';
+      errorDiv.style.fontSize = '12px';
+      errorDiv.style.borderBottom = '2px solid #b91c1c';
+      errorDiv.innerHTML = '<strong>[JS Diagnostics Error]:</strong> ' + e.message + ' at line ' + e.lineno + ' in ' + e.filename.split('/').pop();
+      document.body.appendChild(errorDiv);
+    });
+  </script>
+
+  <script>
+
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            darkbg: '#050505',
+            neoncyan: '#00f0ff',
+            neonblue: '#0072ff',
+            neonpurple: '#bd00ff',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+            tech: ['Orbitron', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-darkbg text-gray-100 min-h-screen">
+
+  <!-- Matter.js Physics Background Canvas -->
+  <canvas id="physics-canvas"></canvas>
+
+  <!-- Glowing Background Orbs -->
+  <div class="bg-glow-purple top-[10%] left-[-5%]"></div>
+  <div class="bg-glow-cyan top-[35%] right-[-10%]"></div>
+  <div class="bg-glow-purple bottom-[20%] left-[10%]"></div>
+  <div class="bg-glow-cyan bottom-[5%] right-[-5%]"></div>
+
+  <!-- Glassmorphic Header Navigation -->
+  <header class="fixed top-0 left-0 w-full z-50 px-6 py-4">
+    <nav class="max-w-7xl mx-auto flex items-center justify-between px-6 py-3 rounded-2xl glass-panel">
+      <div class="flex items-center space-x-2">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-neoncyan to-neonpurple flex items-center justify-center font-bold text-black font-tech">AS</div>
+        <span class="font-display font-semibold tracking-wide hidden sm:inline-block">Anirudh Sudhakaran</span>
+      </div>
+      <div class="flex items-center space-x-6 text-sm font-medium">
+        <a href="#summary" class="hover:text-neoncyan transition-colors duration-200">About</a>
+        <a href="#experience" class="hover:text-neoncyan transition-colors duration-200">Experience</a>
+        <a href="#credentials" class="hover:text-neoncyan transition-colors duration-200">Qualifications</a>
+        <a href="#contact" class="hover:text-neoncyan transition-colors duration-200">Contact</a>
+        <button onclick="initPhysics()" class="hidden md:flex items-center space-x-1.5 px-3 py-1 rounded-lg border border-neonpurple/30 bg-neonpurple/10 text-neonpurple hover:bg-neonpurple hover:text-white transition-all text-xs font-tech">
+          <i class="fa-solid fa-arrows-rotate"></i>
+          <span>Reset Arena</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="max-w-6xl mx-auto px-6 relative">
+    
+    <section id="hero" class="hero-wrapper justify-center pt-24 pb-12">
+      <div class="max-w-3xl pointer-events-none">
+        <span class="text-xs uppercase font-tech tracking-[0.25em] text-neoncyan mb-3 inline-block glow-text-cyan">PORTFOLIO PROTOCOL</span>
+        <h1 class="text-5xl md:text-8xl font-black font-display tracking-tight text-white mb-4 uppercase glitch-text" data-text="ANIRUDH SUDHAKARAN">
+          ANIRUDH SUDHAKARAN
+        </h1>
+        <div class="h-10 md:h-12 flex items-center mb-6">
+          <span id="typewriter-job-title" class="typing-cursor text-neoncyan font-bold font-tech text-lg md:text-2xl tracking-wide glow-text-cyan"></span>
+        </div>
+        <p class="text-base md:text-lg text-gray-400 font-light leading-relaxed max-w-2xl mb-8">
+          A results-driven Business & Operations Leader with <span class="text-white font-semibold">12+ years of experience</span> leading technology-driven transformations, process optimization, workflow automation, and data visibility solutions.
+        </p>
+      </div>
+
+      <!-- Interaction Hint Box (Floating Glass Card) -->
+      <div class="max-w-md p-4 rounded-xl glass-panel border border-neoncyan/20 physics-obstacle flex items-center space-x-3 text-xs mb-8 pointer-events-auto">
+        <div class="w-8 h-8 rounded-full bg-neoncyan/10 flex items-center justify-center text-neoncyan animate-bounce">
+          <i class="fa-solid fa-hand-pointer"></i>
+        </div>
+        <div>
+          <span class="font-tech text-neoncyan block tracking-wider font-semibold">ZERO-GRAVITY SKILLS ARENA ACTIVE</span>
+          <span class="text-gray-400">Grab, drag, and throw my floating skills pills in the background!</span>
+        </div>
+      </div>
+      
+      <!-- Scroll Indicator -->
+      <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center pointer-events-none">
+        <span class="text-[10px] font-tech tracking-widest text-gray-500 mb-2">SCROLL DOWN</span>
+        <div class="w-5 h-8 rounded-full border border-gray-600 flex justify-center p-1">
+          <div class="w-1 h-2 bg-neoncyan rounded-full animate-bounce"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Professional Summary Section -->
+    <section id="summary" class="py-20 reveal">
+      <div class="max-w-4xl mx-auto">
+        <div class="flex items-center space-x-3 mb-8">
+          <h2 class="text-2xl md:text-3xl font-bold font-display text-white">Professional Summary</h2>
+          <div class="h-[1px] flex-1 bg-gradient-to-r from-neoncyan to-transparent"></div>
+        </div>
+        
+        <div class="p-8 rounded-2xl glass-panel border border-white/5 physics-obstacle">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+            <div class="md:col-span-4 flex justify-center">
+              <div class="relative group">
+                <div class="absolute -inset-1.5 bg-gradient-to-tr from-neoncyan to-neonpurple rounded-2xl blur opacity-30 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+                <div class="relative w-36 h-36 md:w-44 md:h-44 rounded-2xl bg-black flex flex-col items-center justify-center border border-white/10 text-center p-4">
+                  <i class="fa-solid fa-diagram-project text-3xl md:text-4xl text-neoncyan mb-3"></i>
+                  <span class="text-2xl md:text-3xl font-tech font-bold text-white">12+</span>
+                  <span class="text-[10px] font-tech text-gray-400 tracking-wider uppercase mt-1">Years of SDLC Excellence</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="md:col-span-8 space-y-4 text-sm md:text-base text-gray-300 leading-relaxed font-light">
+              <p>
+                Business and Operations Leader specializing in technology-led transformation, process enhancements, and continuous improvements. Strong expertise across the full Software Development Life Cycle (SDLC), including requirements elicitation, stakeholder engagement, and Agile/Waterfall delivery.
+              </p>
+              <p>
+                Skilled in process modelling, user journeys, and translating complex business needs into functional specifications and delivery-ready reports. Experienced in supporting system transitions, UAT, and operational readiness to ensure successful adoption.
+              </p>
+              <p>
+                Proven ability to collaborate effectively with various teams to deliver structured, outcome-focused change, improve data visibility, and enable business continuity in fast-paced environments.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Work Experience Section -->
+    <section id="experience" class="py-20 reveal">
+      <div class="max-w-4xl mx-auto">
+        <div class="flex items-center space-x-3 mb-12">
+          <h2 class="text-2xl md:text-3xl font-bold font-display text-white">Work Experience</h2>
+          <div class="h-[1px] flex-1 bg-gradient-to-r from-neonpurple to-transparent"></div>
+        </div>
+
+        <div class="relative pl-6 md:pl-8 border-l timeline-line space-y-12">
+          
+          <!-- Experience Card 1 -->
+          <div class="relative">
+            <div class="absolute w-5 h-5 rounded-full timeline-dot -left-[31px] md:-left-[37px] flex items-center justify-center">
+              <div class="w-2 h-2 rounded-full bg-neoncyan"></div>
+            </div>
+            
+            <div class="p-6 md:p-8 rounded-2xl glass-card-interactive physics-obstacle space-y-4">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div>
+                  <h3 class="text-lg md:text-xl font-bold text-white tracking-wide">Operations Technical Lead</h3>
+                  <p class="text-sm text-neoncyan font-tech">City & Guilds</p>
+                </div>
+                <span class="text-xs font-tech text-gray-400 px-3 py-1 rounded-full bg-white/5 border border-white/5 self-start md:self-auto">Feb 2024 - Present</span>
+              </div>
+              
+              <ul class="space-y-2 text-xs md:text-sm text-gray-300 font-light list-disc pl-4 leading-relaxed">
+                <li>Lead and manage a team of Operations Technical Coordinators and Operations Administrators, assigning work, balancing priorities, and ensuring day-to-day operational delivery runs smoothly.</li>
+                <li>Provide coaching, training, and ongoing support to team members, including the creation of development plans to build capability and confidence.</li>
+                <li>Lead early-stage analysis across five transformation and operational improvement initiatives, shaping business problems into structured, actionable solutions prior to delivery.</li>
+                <li>Facilitate discovery workshops to define problem statements, identify opportunities, and align stakeholders across business and technology.</li>
+                <li>Develop end-to-end process models and user journeys, reducing process inefficiencies by around <strong class="text-neoncyan">95%</strong> across key workflows.</li>
+                <li>Partner with senior stakeholders to define scope, priorities, and success measures, helping ensure work is focused on the right outcomes.</li>
+                <li>Improve KPI visibility through <strong class="text-neonpurple">Power BI dashboards</strong> and automated reporting solutions, supporting better monitoring and decision-making.</li>
+                <li>Establish governance frameworks and SOPs, improving adoption of new solutions by 30% and strengthening consistency across the team.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Experience Card 2 -->
+          <div class="relative">
+            <div class="absolute w-5 h-5 rounded-full timeline-dot -left-[31px] md:-left-[37px] flex items-center justify-center">
+              <div class="w-2 h-2 rounded-full bg-neoncyan"></div>
+            </div>
+            
+            <div class="p-6 md:p-8 rounded-2xl glass-card-interactive physics-obstacle space-y-4">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div>
+                  <h3 class="text-lg md:text-xl font-bold text-white tracking-wide">Business Analyst</h3>
+                  <p class="text-sm text-neoncyan font-tech">Cognizant Technology Solutions</p>
+                </div>
+                <span class="text-xs font-tech text-gray-400 px-3 py-1 rounded-full bg-white/5 border border-white/5 self-start md:self-auto">Feb 2022 - Sept 2023</span>
+              </div>
+              
+              <ul class="space-y-2 text-xs md:text-sm text-gray-300 font-light list-disc pl-4 leading-relaxed">
+                <li>Converted ambiguous digital transformation objectives into structured Agile backlogs, user stories, and functional specifications for cross-functional squads reducing sprint re-work and improving velocity across multiple delivery tracks.</li>
+                <li>Led As-Is/To-Be process analysis across 3 programme workstreams, identifying and removing bottlenecks that were blocking release cycles and misaligning delivery against strategic targets.</li>
+                <li>Bridged product, engineering, and business stakeholders by reframing complex problems into clear, decision-ready outputs reducing escalations and enabling faster alignment on priorities and scope trade-offs.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Experience Card 3 -->
+          <div class="relative">
+            <div class="absolute w-5 h-5 rounded-full timeline-dot -left-[31px] md:-left-[37px] flex items-center justify-center">
+              <div class="w-2 h-2 rounded-full bg-neoncyan"></div>
+            </div>
+            
+            <div class="p-6 md:p-8 rounded-2xl glass-card-interactive physics-obstacle space-y-4">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div>
+                  <h3 class="text-lg md:text-xl font-bold text-white tracking-wide">Software Business Analyst</h3>
+                  <p class="text-sm text-neoncyan font-tech">Enterprise Softlabs Pvt. Ltd.</p>
+                </div>
+                <span class="text-xs font-tech text-gray-400 px-3 py-1 rounded-full bg-white/5 border border-white/5 self-start md:self-auto">Apr 2021 - Oct 2021</span>
+              </div>
+              
+              <ul class="space-y-2 text-xs md:text-sm text-gray-300 font-light list-disc pl-4 leading-relaxed">
+                <li>Gathered, structured, and validated business and system requirements for enterprise software solutions, producing functional specifications and user stories that enabled Agile teams to deliver without ambiguity.</li>
+                <li>Facilitated stakeholder workshops to define requirements and validate solution design, ensuring delivery outcomes were traceable to original business intent.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Experience Card 4 -->
+          <div class="relative">
+            <div class="absolute w-5 h-5 rounded-full timeline-dot timeline-dot-active -left-[31px] md:-left-[37px] flex items-center justify-center">
+              <div class="w-2 h-2 rounded-full bg-neonpurple"></div>
+            </div>
+            
+            <div class="p-6 md:p-8 rounded-2xl glass-card-interactive physics-obstacle space-y-4">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div>
+                  <h3 class="text-lg md:text-xl font-bold text-white tracking-wide">Senior Business Analyst</h3>
+                  <p class="text-sm text-neonpurple font-tech">BCT Consulting Pvt. Ltd.</p>
+                </div>
+                <span class="text-xs font-tech text-gray-400 px-3 py-1 rounded-full bg-white/5 border border-white/5 self-start md:self-auto">Jun 2018 - Feb 2021</span>
+              </div>
+              
+              <ul class="space-y-2 text-xs md:text-sm text-gray-300 font-light list-disc pl-4 leading-relaxed">
+                <li>Delivered data-driven pricing and commercial analysis that contributed directly to <strong class="text-neoncyan">$24M</strong> in revenue recovery translating raw transactional datasets into executive-ready insights and concrete strategic recommendations.</li>
+                <li>Led analysis across 3 strategic initiatives spanning digital products and operational transformation; produced feasibility assessments and business cases that shaped organisational investment decisions at board level.</li>
+                <li>Drove <strong class="text-neoncyan">27%</strong> improvement in operational efficiency and an <strong class="text-neoncyan">18%</strong> increase in customer satisfaction by redesigning end-to-end workflows and aligning solution design with verified user and business needs.</li>
+                <li>Scaled team analytical capability by mentoring 6 junior analysts, standardising output quality and methodology consistency across the practice.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Experience Card 5 -->
+          <div class="relative">
+            <div class="absolute w-5 h-5 rounded-full timeline-dot timeline-dot-active -left-[31px] md:-left-[37px] flex items-center justify-center">
+              <div class="w-2 h-2 rounded-full bg-neonpurple"></div>
+            </div>
+            
+            <div class="p-6 md:p-8 rounded-2xl glass-card-interactive physics-obstacle space-y-4">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div>
+                  <h3 class="text-lg md:text-xl font-bold text-white tracking-wide">Application Delivery Specialist</h3>
+                  <p class="text-sm text-neonpurple font-tech">DXC Technology</p>
+                </div>
+                <span class="text-xs font-tech text-gray-400 px-3 py-1 rounded-full bg-white/5 border border-white/5 self-start md:self-auto">Oct 2012 - Aug 2017</span>
+              </div>
+              
+              <ul class="space-y-2 text-xs md:text-sm text-gray-300 font-light list-disc pl-4 leading-relaxed">
+                <li>Supported enterprise applications handling ~1000 daily transactions, ensuring high availability and performance.</li>
+                <li>Maintained <strong class="text-neoncyan">>98% SLA compliance</strong> for enterprise applications processing ~1,000 daily transactions across 3 regions achieved through proactive monitoring frameworks, structured root cause analysis, and cross-functional vendor coordination.</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Credentials (Certifications & Education) Section -->
+    <section id="credentials" class="py-20 reveal">
+      <div class="max-w-4xl mx-auto">
+        <div class="flex items-center space-x-3 mb-10">
+          <h2 class="text-2xl md:text-3xl font-bold font-display text-white">Qualifications</h2>
+          <div class="h-[1px] flex-1 bg-gradient-to-r from-neoncyan to-transparent"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          
+          <!-- Certifications Card -->
+          <div class="p-6 rounded-2xl glass-panel border border-white/5 physics-obstacle space-y-6">
+            <div class="flex items-center space-x-3 text-neoncyan">
+              <i class="fa-solid fa-award text-xl"></i>
+              <h3 class="text-lg font-bold font-display text-white">Professional Certifications</h3>
+            </div>
+            <ul class="space-y-4 text-sm font-light text-gray-300">
+              <li class="flex items-start space-x-2">
+                <i class="fa-solid fa-circle-check text-neoncyan mt-1 text-xs"></i>
+                <div>
+                  <span class="font-medium text-white block">Microsoft Fabric Analyst</span>
+                  <span class="text-xs text-gray-400 font-tech">DATA & ANALYTICS</span>
+                </div>
+              </li>
+              <li class="flex items-start space-x-2">
+                <i class="fa-solid fa-circle-check text-neoncyan mt-1 text-xs"></i>
+                <div>
+                  <span class="font-medium text-white block">Neural Networks with Deep Learning</span>
+                  <span class="text-xs text-gray-400 font-tech">AI & MACHINE LEARNING</span>
+                </div>
+              </li>
+              <li class="flex items-start space-x-2">
+                <i class="fa-solid fa-circle-check text-neoncyan mt-1 text-xs"></i>
+                <div>
+                  <span class="font-medium text-white block">Software AG Certified ARIS Modeler</span>
+                  <span class="text-xs text-gray-400 font-tech">PROCESS MODELLING</span>
+                </div>
+              </li>
+              <li class="flex items-start space-x-2">
+                <i class="fa-solid fa-circle-check text-neoncyan mt-1 text-xs"></i>
+                <div>
+                  <span class="font-medium text-white block">Celonis Certified Implementation Professional</span>
+                  <span class="text-xs text-gray-400 font-tech">PROCESS MINING & ANALYSIS</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Education Card -->
+          <div class="p-6 rounded-2xl glass-panel border border-white/5 physics-obstacle space-y-6">
+            <div class="flex items-center space-x-3 text-neonpurple">
+              <i class="fa-solid fa-graduation-cap text-xl"></i>
+              <h3 class="text-lg font-bold font-display text-white">Education</h3>
+            </div>
+            <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+              <h4 class="font-medium text-white text-sm">Bachelor of Engineering</h4>
+              <p class="text-xs text-neonpurple font-tech mt-1">ELECTRICAL & ELECTRONICS ENGINEERING</p>
+              <p class="text-xs text-gray-400 mt-3">Velammal Institute of Technology</p>
+              <p class="text-[10px] text-gray-500 font-tech mt-1">CLASS OF 2012</p>
+            </div>
+            <div class="pt-2 text-xs font-light text-gray-400 leading-relaxed">
+              Provides a solid quantitative and analytical foundation that supports engineering methodologies, workflow logic, complex data structures, and automation algorithms.
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact & Footer Section -->
+    <section id="contact" class="py-20 pb-28 reveal">
+      <div class="max-w-4xl mx-auto text-center space-y-12">
+        <div class="space-y-4">
+          <span class="text-xs uppercase font-tech tracking-[0.25em] text-neonpurple mb-1 inline-block glow-text-purple">COMMUNICATION UPLINK</span>
+          <h2 class="text-3xl md:text-5xl font-extrabold font-display text-white">Let's Connect</h2>
+          <p class="text-sm md:text-base text-gray-400 font-light max-w-md mx-auto">
+            Ready to drive automation, process efficiency, or lead operations technical delivery? Connect with me.
+          </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
+          <!-- LinkedIn Magnetic Button -->
+          <a href="https://www.linkedin.com/in/anirudh-sudhakaran-48248a28a/" target="_blank" rel="noopener noreferrer" class="magnetic-btn border border-white/10 rounded-xl px-8 py-4 w-60 sm:w-auto text-center bg-white/5 font-semibold text-white tracking-wide transition-all shadow-lg hover:border-neoncyan/40">
+            <span class="magnetic-btn-inner space-x-2 text-sm font-tech uppercase">
+              <i class="fa-brands fa-linkedin text-neoncyan text-base"></i>
+              <span>LinkedIn</span>
+            </span>
+          </a>
+
+          <!-- Email Magnetic Button -->
+          <a href="mailto:anirudhsudhakaran04@gmail.com" class="magnetic-btn border border-white/10 rounded-xl px-8 py-4 w-60 sm:w-auto text-center bg-white/5 font-semibold text-white tracking-wide transition-all shadow-lg hover:border-neonpurple/40">
+            <span class="magnetic-btn-inner space-x-2 text-sm font-tech uppercase">
+              <i class="fa-regular fa-envelope text-neonpurple text-base"></i>
+              <span>Send Message</span>
+            </span>
+          </a>
+        </div>
+
+        <!-- Inner Footer Details -->
+        <div class="pt-12 border-t border-white/5 text-gray-500 text-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p>&copy; 2026 Anirudh Sudhakaran. All Rights Reserved.</p>
+          <div class="flex items-center space-x-4">
+            <a href="mailto:anirudhsudhakaran04@gmail.com" class="hover:text-neoncyan transition-colors"><i class="fa-solid fa-envelope"></i></a>
+            <a href="https://www.linkedin.com/in/anirudh-sudhakaran-48248a28a/" target="_blank" rel="noopener noreferrer" class="hover:text-neoncyan transition-colors"><i class="fa-brands fa-linkedin"></i></a>
+            <button onclick="initPhysics()" class="hover:text-neonpurple transition-colors text-[10px] font-tech flex items-center space-x-1">
+              <i class="fa-solid fa-arrows-rotate"></i>
+              <span>Reset Arena</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- High-Tech Debug Panel -->
+  <div id="debug-panel" class="fixed bottom-4 right-4 z-[9999] p-4 rounded-xl glass-panel border border-neoncyan/30 text-[10px] font-tech text-gray-400 space-y-2 pointer-events-auto max-w-xs transition-all duration-300">
+    <div class="flex items-center justify-between border-b border-white/10 pb-1.5 mb-1.5">
+      <span class="text-neoncyan font-bold">SYSTEM DIAGNOSTICS</span>
+      <button onclick="toggleDebug()" class="hover:text-neoncyan"><i class="fa-solid fa-chevron-down" id="debug-chevron"></i></button>
+    </div>
+    <div id="debug-content" class="space-y-1">
+      <div>CANVAS SIZE: <span id="debug-canvas-size" class="text-white">---</span></div>
+      <div>PHYSICS ENGINE: <span id="debug-engine-status" class="text-white">---</span></div>
+      <div>FLOATING PILLS: <span id="debug-pills-count" class="text-white">0</span></div>
+      <div>STATIC CARD OBSTACLES: <span id="debug-obstacles-count" class="text-white">0</span></div>
+      <div>LAST ERROR: <span id="debug-last-error" class="text-green-400">NONE</span></div>
+    </div>
+  </div>
+
+  <script>
+    function toggleDebug() {
+      const content = document.getElementById('debug-content');
+      const chevron = document.getElementById('debug-chevron');
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        chevron.classList.remove('fa-chevron-up');
+        chevron.classList.add('fa-chevron-down');
+      } else {
+        content.classList.add('hidden');
+        chevron.classList.remove('fa-chevron-down');
+        chevron.classList.add('fa-chevron-up');
+      }
+    }
+  </script>
+
+  <!-- Load Matter.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+  
+  <!-- Custom Logic -->
+  <script src="script.js"></script>
+
+</body>
+</html>
+
