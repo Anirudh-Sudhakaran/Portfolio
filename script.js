@@ -241,8 +241,15 @@ function initPhysics() {
 function renderCanvas() {
   context.clearRect(0, 0, canvas.width, canvas.height);
   
+  // Guard: wait if physics is not initialized yet
+  if (!mouseConstraint) {
+    requestAnimationFrame(renderCanvas);
+    return;
+  }
+  
   // Draw Connection Lines when dragging (subtle link)
   if (mouseConstraint.body) {
+
     const body = mouseConstraint.body;
     if (body.label === 'skill-pill') {
       context.beginPath();
@@ -325,6 +332,7 @@ function renderCanvas() {
 
 // Maintain Float Drift & Speed Limits
 Matter.Events.on(engine, 'afterUpdate', () => {
+  if (!mouseConstraint) return;
   skillBodies.forEach(body => {
     // 1. Cap maximum velocity to prevent tunnel issues
     const maxSpeed = 4.5;
