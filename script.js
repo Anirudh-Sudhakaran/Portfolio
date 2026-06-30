@@ -25,7 +25,11 @@ const skillsData = [
   { name: "Visio", category: "modelling" },
   { name: "Miro", category: "modelling" },
   { name: "Business Analysis", category: "modelling" },
-  { name: "Automation", category: "automation" }
+  { name: "Automation", category: "automation" },
+  { name: "Project Management", category: "delivery" },
+  { name: "SWOT", category: "analytics" },
+  { name: "RCA", category: "analytics" },
+  { name: "SDLC", category: "delivery" }
 ];
 
 // Initialize Canvas
