@@ -89,13 +89,21 @@ function initGlobe() {
 
   // Simple client locations (approx lat, lon)
   const clients = [
-    { id: 'cityguilds', title: 'City & Guilds', lat: 51.5074, lon: -0.1278, color: '#bd00ff', desc: 'Implemented process improvements and automation, increasing operational efficiency by 35%.' },
-    { id: 'fiserv_bin', title: 'Fiserv - 8 Digit BIN Conversion', lat: 43.0389, lon: -87.9065, color: '#00f0ff', desc: 'Delivered end-to-end enterprise implementations with strong stakeholder alignment.' },
-    { id: 'fiserv_kent', title: 'Fiserv - Kent', lat: 51.2787, lon: 0.5218, color: '#00f0ff', desc: 'Led onboarding and platform configuration activities, improving deployment effort by 30%.' },
-    { id: 'homeserve', title: 'HomeServe PLC - HS Ensura', lat: 52.5856, lon: -1.9828, color: '#ff6ec7', desc: 'Led pricing and product configuration across 200+ partners, improving pricing accuracy.' },
-    { id: 'att', title: 'AT&T - Common Services', lat: 32.7767, lon: -96.7970, color: '#0072ff', desc: 'Provided production support and improved platform stability to 99.9% availability.' },
-    { id: 'farmers_dashboard', title: 'Farmers Insurance - eFolio', lat: 34.1708, lon: -118.6056, color: '#39ff14', desc: 'Enhanced business-critical application components with high quality delivery.' }
+    { id: 'cityguilds', title: 'City & Guilds', lat: 53.8008, lon: -1.5491, color: '#bd00ff', desc: 'Excelled in City & Guilds to implement process improvements and automation solutions, leading to a 35% increase in operational efficiency and enhanced reporting capabilities for better decision-making.' },
+    { id: 'fiserv_bin', title: 'Fiserv - 8 Digit BIN Conversion', lat: 13.0827, lon: 80.2707, color: '#00f0ff', desc: 'Delivered end-to-end implementation projects for enterprise clients, consistently achieving 100% adherence to project timelines and budget commitments while ensuring smooth stakeholder alignment. Conducted in-depth business and data analysis, providing actionable insights that improved decision-making efficiency and enhanced implementation outcomes. Drove process and organizational optimization initiatives, contributing to improved operational effectiveness, faster adoption rates, and measurable business value realization for clients.' },
+    { id: 'fiserv_kent', title: 'Fiserv - Kent', lat: 17.3850, lon: 78.4867, color: '#00f0ff', desc: 'Led client onboarding and platform configuration activities, successfully configuring media, letters, statements, and notices for multiple clients, reducing deployment effort by 30% through standardized implementation practices. Managed end-to-end validation, testing, and migration processes across QA and Development environments, achieving 99%+ configuration accuracy and minimizing production defects. Collaborated closely with onshore teams during sprint and release cycles, accelerating wave-release readiness by 20% and ensuring seamless delivery of client-specific requirements through rigorous UAT and quality assurance.' },
+    { id: 'homeserve', title: 'HomeServe PLC - HS Ensura', lat: 35.0456, lon: -85.3097, color: '#ff6ec7', desc: 'Led pricing and product configuration across 200+ On-Bill and Off-Bill partners, improving pricing accuracy by ~37% and reducing configuration turnaround times by 21% through process optimization and automation. Streamlined price increase and revenue-cycle workflows, collaborating with business stakeholders to enhance operational efficiency while ensuring seamless integration across Ensura and partner platforms. Drove UAT, application support, and synchronization testing, contributing to 99% configuration quality, faster issue resolution, and improved stakeholder confidence in product launches and pricing changes.' },
+    { id: 'att', title: 'AT&T - Common Services Integration', lat: 17.3850, lon: 78.4867, color: '#0072ff', desc: 'Provided production support for mission-critical middleware applications, achieving 99.9% service availability through proactive monitoring, incident management, and SLA adherence. Performed root cause analysis, patch deployments, DR synchronization, and migration activities, reducing recurring production incidents by 25%+ and strengthening platform stability. Collaborated with development, testing, and vendor teams to resolve complex issues, optimize JVM performance, and ensure successful delivery of releases within defined change windows.' },
+    { id: 'farmers_dashboard', title: 'Farmers Insurance - eFolio Dashboard', lat: 34.1683, lon: -118.6058, color: '#39ff14', desc: 'Developed and enhanced business-critical application components, delivering change requests with 100% adherence to functional requirements and improving overall system usability. Partnered with client and onsite stakeholders to translate business requirements into scalable technical solutions, enabling faster delivery cycles and improved customer satisfaction. Implemented business logic and application enhancements, contributing to greater process efficiency and reducing manual intervention across key insurance workflows.' },
+    { id: 'farmers_eagent', title: 'Farmers Insurance - eAgent Dashboard', lat: 17.3850, lon: 78.4867, color: '#39ff14', desc: 'Managed application support, defect resolution, and incident handling, improving application stability by 20%+ through proactive monitoring and rapid issue remediation. Developed and maintained key application modules and change requests, enabling continuous platform enhancements while ensuring high-quality code delivery. Monitored server health and application performance, providing actionable insights through daily reporting and technical reviews that improved service reliability and stakeholder visibility.' }
   ];
+
+  // Load equirectangular world map texture for visible outlines
+  const mapImg = new Image();
+  mapImg.crossOrigin = 'anonymous';
+  mapImg.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/World_map_-_low_resolution.svg/2000px-World_map_-_low_resolution.svg.png';
+  let mapLoaded = false;
+  mapImg.onload = () => { mapLoaded = true; };
 
   // Globe rotation state
   let rotY = 0; // longitude rotation (radians)
@@ -159,13 +167,27 @@ function initGlobe() {
     ctx.fill();
 
     // globe base
+    // draw textured map clipped to globe
+    ctx.save();
     ctx.beginPath();
-    const globeGrad = ctx.createRadialGradient(c.x - radius * 0.3, c.y - radius * 0.3, radius * 0.1, c.x, c.y, radius);
-    globeGrad.addColorStop(0, 'rgba(0,114,255,0.06)');
-    globeGrad.addColorStop(1, 'rgba(10,10,10,0.6)');
-    ctx.fillStyle = globeGrad;
     ctx.arc(c.x, c.y, radius, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.clip();
+    if (mapLoaded) {
+      const mapH = radius * 2;
+      const mapW = mapH * 2; // equirectangular ratio
+      // offset based on rotation (rotY)
+      const offset = ((rotY / (Math.PI * 2)) * mapW) % mapW;
+      // draw two copies to allow horizontal wrap
+      ctx.drawImage(mapImg, -offset + c.x - mapW/2, c.y - mapH/2, mapW, mapH);
+      ctx.drawImage(mapImg, -offset + c.x - mapW/2 + mapW, c.y - mapH/2, mapW, mapH);
+    } else {
+      const globeGrad = ctx.createRadialGradient(c.x - radius * 0.3, c.y - radius * 0.3, radius * 0.1, c.x, c.y, radius);
+      globeGrad.addColorStop(0, 'rgba(0,114,255,0.06)');
+      globeGrad.addColorStop(1, 'rgba(10,10,10,0.6)');
+      ctx.fillStyle = globeGrad;
+      ctx.fillRect(c.x - radius, c.y - radius, radius * 2, radius * 2);
+    }
+    ctx.restore();
 
     // rim
     ctx.lineWidth = 1.5;
@@ -319,6 +341,33 @@ function initGlobe() {
     targetRotY = degToRad(-client.lon);
     targetRotX = degToRad(client.lat) * 0.6;
   }
+
+  // Mouse / touch drag to rotate globe
+  let isDragging = false;
+  let lastX = 0, lastY = 0;
+  const dragSensitivity = 0.007; // radians per pixel
+
+  canvas.addEventListener('pointerdown', (e) => {
+    isDragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    // update target rotations
+    targetRotY += dx * dragSensitivity;
+    targetRotX += dy * dragSensitivity * -1; // invert so dragging up rotates north
+    // clamp latitude rotation
+    const maxLat = Math.PI / 3;
+    targetRotX = Math.max(-maxLat, Math.min(maxLat, targetRotX));
+    // hide popup while dragging
+    hidePopup();
+  });
+  window.addEventListener('pointerup', (e) => { isDragging = false; });
 
   // Smooth animation loop
   function animate() {
