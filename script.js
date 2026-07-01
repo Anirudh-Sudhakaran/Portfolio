@@ -64,6 +64,281 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
   ctx.closePath();
 }
 
+/* --- Neon Globe / Map Implementation --- */
+function initGlobe() {
+  const canvas = document.getElementById('globe-canvas');
+  const popup = document.getElementById('map-popup');
+  if (!canvas || !canvas.getContext) return;
+  const ctx = canvas.getContext('2d');
+
+  // Handle HiDPI
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.max(600, rect.width) * dpr;
+    canvas.height = Math.max(360, rect.height) * dpr;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resizeCanvas();
+  window.addEventListener('resize', () => { resizeCanvas(); });
+
+  const center = () => ({ x: canvas.width / (2 * (window.devicePixelRatio||1)), y: canvas.height / (2 * (window.devicePixelRatio||1)) });
+  let radius = Math.min(canvas.width / (2*(window.devicePixelRatio||1)), canvas.height / (2*(window.devicePixelRatio||1))) - 26;
+
+  // Simple client locations (approx lat, lon)
+  const clients = [
+    { id: 'cityguilds', title: 'City & Guilds', lat: 51.5074, lon: -0.1278, color: '#bd00ff', desc: 'Implemented process improvements and automation, increasing operational efficiency by 35%.' },
+    { id: 'fiserv_bin', title: 'Fiserv - 8 Digit BIN Conversion', lat: 43.0389, lon: -87.9065, color: '#00f0ff', desc: 'Delivered end-to-end enterprise implementations with strong stakeholder alignment.' },
+    { id: 'fiserv_kent', title: 'Fiserv - Kent', lat: 51.2787, lon: 0.5218, color: '#00f0ff', desc: 'Led onboarding and platform configuration activities, improving deployment effort by 30%.' },
+    { id: 'homeserve', title: 'HomeServe PLC - HS Ensura', lat: 52.5856, lon: -1.9828, color: '#ff6ec7', desc: 'Led pricing and product configuration across 200+ partners, improving pricing accuracy.' },
+    { id: 'att', title: 'AT&T - Common Services', lat: 32.7767, lon: -96.7970, color: '#0072ff', desc: 'Provided production support and improved platform stability to 99.9% availability.' },
+    { id: 'farmers_dashboard', title: 'Farmers Insurance - eFolio', lat: 34.1708, lon: -118.6056, color: '#39ff14', desc: 'Enhanced business-critical application components with high quality delivery.' }
+  ];
+
+  // Globe rotation state
+  let rotY = 0; // longitude rotation (radians)
+  let rotX = 0; // latitude rotation
+  let targetRotY = 0;
+  let targetRotX = 0;
+
+  // Utility functions
+  function degToRad(d) { return d * Math.PI / 180; }
+
+  function latLonToCartesian(lat, lon, r) {
+    const phi = degToRad(90 - lat);
+    const theta = degToRad(lon + 180);
+    const x = r * Math.sin(phi) * Math.cos(theta);
+    const y = r * Math.cos(phi);
+    const z = r * Math.sin(phi) * Math.sin(theta);
+    return { x, y, z };
+  }
+
+  function rotatePoint(p, rx, ry) {
+    // rotate around X (rx) then Y (ry)
+    // X rotation
+    let x = p.x;
+    let y = p.y * Math.cos(rx) - p.z * Math.sin(rx);
+    let z = p.y * Math.sin(rx) + p.z * Math.cos(rx);
+    // Y rotation
+    const nx = x * Math.cos(ry) + z * Math.sin(ry);
+    const nz = -x * Math.sin(ry) + z * Math.cos(ry);
+    return { x: nx, y: y, z: nz };
+  }
+
+  function project(p) {
+    const c = center();
+    // simple orthographic projection with slight perspective
+    const scale = 1.0 + (p.z / (radius * 4));
+    return { x: c.x + p.x * scale, y: c.y - p.y * scale, z: p.z };
+  }
+
+  // Compute projected positions for pins
+  function computePins() {
+    radius = Math.min(canvas.width / (2*(window.devicePixelRatio||1)), canvas.height / (2*(window.devicePixelRatio||1))) - 26;
+    return clients.map(c => {
+      const cart = latLonToCartesian(c.lat, c.lon, radius * 0.92);
+      const rotated = rotatePoint(cart, rotX, rotY);
+      const proj = project(rotated);
+      return Object.assign({}, c, { cart, rotated, proj, visible: rotated.z > -radius * 0.95 });
+    });
+  }
+
+  // Draw functions
+  function drawGlobe() {
+    const c = center();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // outer glow
+    const grad = ctx.createRadialGradient(c.x, c.y, radius * 0.3, c.x, c.y, radius * 1.1);
+    grad.addColorStop(0, 'rgba(0,240,255,0.06)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, radius + 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    // globe base
+    ctx.beginPath();
+    const globeGrad = ctx.createRadialGradient(c.x - radius * 0.3, c.y - radius * 0.3, radius * 0.1, c.x, c.y, radius);
+    globeGrad.addColorStop(0, 'rgba(0,114,255,0.06)');
+    globeGrad.addColorStop(1, 'rgba(10,10,10,0.6)');
+    ctx.fillStyle = globeGrad;
+    ctx.arc(c.x, c.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // rim
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(0,240,255,0.12)';
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // lat / lon grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+    ctx.lineWidth = 0.8;
+    for (let lat = -60; lat <= 60; lat += 20) {
+      ctx.beginPath();
+      const points = 80;
+      for (let i = 0; i <= points; i++) {
+        const lon = (i / points) * 360 - 180;
+        const cart = latLonToCartesian(lat, lon, radius);
+        const r = rotatePoint(cart, rotX, rotY);
+        const p = project(r);
+        if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+    }
+    for (let lon = -180; lon <= 180; lon += 30) {
+      ctx.beginPath();
+      const points = 80;
+      for (let i = 0; i <= points; i++) {
+        const lat = (i / points) * 180 - 90;
+        const cart = latLonToCartesian(lat, lon, radius);
+        const r = rotatePoint(cart, rotX, rotY);
+        const p = project(r);
+        if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+    }
+  }
+
+  function drawPinsAndArcs() {
+    const pinSet = computePins();
+
+    // draw arcs between consecutive clients in the array
+    for (let i = 0; i < pinSet.length - 1; i++) {
+      const a = pinSet[i];
+      const b = pinSet[i + 1];
+      if (!a.visible && !b.visible) continue;
+      // great-circle interpolation
+      const steps = 60;
+      ctx.beginPath();
+      for (let t = 0; t <= steps; t++) {
+        const f = t / steps;
+        // slerp between normalized cart vectors
+        const va = normalizeVec(a.cart);
+        const vb = normalizeVec(b.cart);
+        const angle = Math.acos(Math.min(1, Math.max(-1, dot(va, vb))));
+        const sinAngle = Math.sin(angle) || 1e-6;
+        const s1 = Math.sin((1 - f) * angle) / sinAngle;
+        const s2 = Math.sin(f * angle) / sinAngle;
+        const vx = va.x * s1 + vb.x * s2;
+        const vy = va.y * s1 + vb.y * s2;
+        const vz = va.z * s1 + vb.z * s2;
+        const pt = rotatePoint({ x: vx * radius * 0.98, y: vy * radius * 0.98, z: vz * radius * 0.98 }, rotX, rotY);
+        const p = project(pt);
+        if (t === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+      }
+      ctx.strokeStyle = 'rgba(0,240,255,0.22)';
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+    }
+
+    // draw pins
+    pinSet.forEach(p => {
+      if (!p.visible) return;
+      // glow
+      ctx.beginPath();
+      ctx.fillStyle = p.color + '33';
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 14;
+      ctx.arc(p.proj.x, p.proj.y, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // core
+      ctx.beginPath();
+      ctx.fillStyle = '#fff';
+      ctx.arc(p.proj.x, p.proj.y, 3, 0, Math.PI * 2);
+      ctx.fill();
+      // ring
+      ctx.beginPath();
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = 1.2;
+      ctx.arc(p.proj.x, p.proj.y, 9, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+
+    return pinSet;
+  }
+
+  // Vec helpers
+  function dot(a, b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+  function len(v) { return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z); }
+  function normalizeVec(v) { const l = len(v) || 1; return { x: v.x / l, y: v.y / l, z: v.z / l }; }
+
+  // Interaction
+  let lastPinSet = [];
+  canvas.addEventListener('click', (ev) => {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const mx = (ev.clientX - rect.left) * (dpr);
+    const my = (ev.clientY - rect.top) * (dpr);
+    // find nearest visible pin
+    let nearest = null;
+    let nd = 9999;
+    lastPinSet.forEach(p => {
+      if (!p.visible) return;
+      const dx = mx / dpr - p.proj.x;
+      const dy = my / dpr - p.proj.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < nd && dist < 22) { nd = dist; nearest = p; }
+    });
+    if (nearest) {
+      showPopupFor(nearest, rect);
+      rotateToClient(nearest);
+    } else {
+      hidePopup();
+    }
+  });
+
+  function showPopupFor(p, rect) {
+    if (!popup) return;
+    popup.innerHTML = `<button class=\"close-btn\">✕</button><div class=\"title\">${p.title}</div><div class=\"desc\">${p.desc}</div>`;
+    const dpr = window.devicePixelRatio || 1;
+    popup.classList.remove('hidden');
+    popup.style.left = (p.proj.x) + 'px';
+    popup.style.top = (p.proj.y) + 'px';
+    // position relative to container
+    const containerRect = canvas.getBoundingClientRect();
+    popup.style.left = (p.proj.x) + 'px';
+    popup.style.top = (p.proj.y) + 'px';
+    // Attach close handler
+    const btn = popup.querySelector('.close-btn');
+    if (btn) btn.onclick = () => { hidePopup(); };
+  }
+
+  function hidePopup() {
+    if (!popup) return;
+    popup.classList.add('hidden');
+  }
+
+  function rotateToClient(client) {
+    // target rotations to bring the pin roughly to center
+    // approximate: rotY should be -lon, rotX should be lat*0.6
+    targetRotY = degToRad(-client.lon);
+    targetRotX = degToRad(client.lat) * 0.6;
+  }
+
+  // Smooth animation loop
+  function animate() {
+    // ease rotations
+    const ease = 0.08;
+    rotY += (targetRotY - rotY) * ease;
+    rotX += (targetRotX - rotX) * ease;
+
+    drawGlobe();
+    lastPinSet = drawPinsAndArcs();
+    requestAnimationFrame(animate);
+  }
+
+  // Initialize default rotation to show Europe/UK
+  targetRotY = degToRad(10);
+  targetRotX = degToRad(0);
+
+  animate();
+}
+
 // Check Overlap with Card Rects
 function isOverlapping(x, y, w, h, rects) {
   const buffer = 30;
@@ -381,6 +656,7 @@ window.addEventListener('load', () => {
   initTypewriter();
   initMagneticButtons();
   initScrollReveal();
+  initGlobe();
 });
 
 // Re-init on window resizing (with debounce)
