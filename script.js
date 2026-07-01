@@ -64,14 +64,13 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
   ctx.closePath();
 }
 
-/* --- Neon Globe / Map Implementation --- */
+/* --- Neon World Map Implementation --- */
 function initGlobe() {
   const canvas = document.getElementById('globe-canvas');
   const popup = document.getElementById('map-popup');
   if (!canvas || !canvas.getContext) return;
   const ctx = canvas.getContext('2d');
 
-  // Handle HiDPI
   function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
@@ -82,12 +81,8 @@ function initGlobe() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   resizeCanvas();
-  window.addEventListener('resize', () => { resizeCanvas(); });
+  window.addEventListener('resize', resizeCanvas);
 
-  const center = () => ({ x: canvas.width / (2 * (window.devicePixelRatio||1)), y: canvas.height / (2 * (window.devicePixelRatio||1)) });
-  let radius = Math.min(canvas.width / (2*(window.devicePixelRatio||1)), canvas.height / (2*(window.devicePixelRatio||1))) - 26;
-
-  // Simple client locations (approx lat, lon)
   const clients = [
     { id: 'cityguilds', title: 'City & Guilds', lat: 53.8008, lon: -1.5491, color: '#bd00ff', desc: 'Excelled in City & Guilds to implement process improvements and automation solutions, leading to a 35% increase in operational efficiency and enhanced reporting capabilities for better decision-making.' },
     { id: 'fiserv_bin', title: 'Fiserv - 8 Digit BIN Conversion', lat: 13.0827, lon: 80.2707, color: '#00f0ff', desc: 'Delivered end-to-end implementation projects for enterprise clients, consistently achieving 100% adherence to project timelines and budget commitments while ensuring smooth stakeholder alignment. Conducted in-depth business and data analysis, providing actionable insights that improved decision-making efficiency and enhanced implementation outcomes. Drove process and organizational optimization initiatives, contributing to improved operational effectiveness, faster adoption rates, and measurable business value realization for clients.' },
@@ -98,235 +93,160 @@ function initGlobe() {
     { id: 'farmers_eagent', title: 'Farmers Insurance - eAgent Dashboard', lat: 17.3850, lon: 78.4867, color: '#39ff14', desc: 'Managed application support, defect resolution, and incident handling, improving application stability by 20%+ through proactive monitoring and rapid issue remediation. Developed and maintained key application modules and change requests, enabling continuous platform enhancements while ensuring high-quality code delivery. Monitored server health and application performance, providing actionable insights through daily reporting and technical reviews that improved service reliability and stakeholder visibility.' }
   ];
 
-  // Load equirectangular world map texture for visible outlines
-  const mapImg = new Image();
-  mapImg.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/World_map_-_low_resolution.svg/2000px-World_map_-_low_resolution.svg.png';
-  let mapLoaded = false;
-  let mapError = false;
-  mapImg.onload = () => { mapLoaded = true; mapError = false; };
-  mapImg.onerror = () => {
-    mapLoaded = false;
-    mapError = true;
-    console.warn('Globe map texture failed to load, using fallback outline.');
-  };
-
-  // Globe rotation state
-  let rotY = 0; // longitude rotation (radians)
-  let rotX = 0; // latitude rotation
-  let targetRotY = 0;
-  let targetRotX = 0;
-
-  // Utility functions
-  function degToRad(d) { return d * Math.PI / 180; }
-
-  function latLonToCartesian(lat, lon, r) {
-    const phi = degToRad(90 - lat);
-    const theta = degToRad(lon + 180);
-    const x = r * Math.sin(phi) * Math.cos(theta);
-    const y = r * Math.cos(phi);
-    const z = r * Math.sin(phi) * Math.sin(theta);
-    return { x, y, z };
-  }
-
-  function rotatePoint(p, rx, ry) {
-    // rotate around X (rx) then Y (ry)
-    // X rotation
-    let x = p.x;
-    let y = p.y * Math.cos(rx) - p.z * Math.sin(rx);
-    let z = p.y * Math.sin(rx) + p.z * Math.cos(rx);
-    // Y rotation
-    const nx = x * Math.cos(ry) + z * Math.sin(ry);
-    const nz = -x * Math.sin(ry) + z * Math.cos(ry);
-    return { x: nx, y: y, z: nz };
-  }
-
-  function project(p) {
-    const c = center();
-    // simple orthographic projection with slight perspective
-    const scale = 1.0 + (p.z / (radius * 4));
-    return { x: c.x + p.x * scale, y: c.y - p.y * scale, z: p.z };
-  }
-
-  const fallbackLandmasses = [
-    [
-      { lat: 60, lon: -145 }, { lat: 56, lon: -135 }, { lat: 50, lon: -120 }, { lat: 45, lon: -100 },
-      { lat: 35, lon: -90 }, { lat: 30, lon: -80 }, { lat: 22, lon: -75 }, { lat: 10, lon: -80 },
-      { lat: 2, lon: -75 }, { lat: -12, lon: -60 }, { lat: -22, lon: -55 }, { lat: -30, lon: -60 },
-      { lat: -20, lon: -80 }, { lat: -12, lon: -100 }, { lat: 10, lon: -110 }, { lat: 30, lon: -120 },
-      { lat: 45, lon: -135 }, { lat: 55, lon: -145 }
-    ],
-    [
-      { lat: 70, lon: -20 }, { lat: 65, lon: 0 }, { lat: 60, lon: 20 }, { lat: 55, lon: 30 },
-      { lat: 50, lon: 10 }, { lat: 50, lon: -10 }, { lat: 58, lon: -20 }, { lat: 66, lon: -25 }
-    ],
-    [
-      { lat: 45, lon: 0 }, { lat: 35, lon: 10 }, { lat: 30, lon: 20 }, { lat: 10, lon: 20 },
-      { lat: 5, lon: 10 }, { lat: -5, lon: 10 }, { lat: -10, lon: 20 }, { lat: -20, lon: 20 },
-      { lat: -30, lon: 10 }, { lat: -35, lon: 0 }, { lat: -20, lon: -10 }, { lat: 0, lon: -10 }
-    ],
-    [
-      { lat: 50, lon: 60 }, { lat: 45, lon: 70 }, { lat: 40, lon: 85 }, { lat: 30, lon: 95 },
-      { lat: 15, lon: 100 }, { lat: 5, lon: 105 }, { lat: -10, lon: 100 }, { lat: -20, lon: 95 },
-      { lat: -30, lon: 100 }, { lat: -40, lon: 115 }, { lat: -35, lon: 130 }, { lat: -15, lon: 130 },
-      { lat: 5, lon: 130 }, { lat: 20, lon: 120 }, { lat: 35, lon: 110 }, { lat: 47, lon: 95 }
-    ],
-    [
-      { lat: -10, lon: 110 }, { lat: -20, lon: 120 }, { lat: -30, lon: 135 }, { lat: -25, lon: 150 },
-      { lat: -15, lon: 145 }, { lat: -5, lon: 140 }, { lat: 5, lon: 130 }
-    ]
+  const continentShapes = [
+    {
+      points: [
+        { lat: 72, lon: -168 }, { lat: 70, lon: -138 }, { lat: 64, lon: -125 }, { lat: 58, lon: -120 },
+        { lat: 50, lon: -127 }, { lat: 46, lon: -123 }, { lat: 42, lon: -130 }, { lat: 34, lon: -119 },
+        { lat: 28, lon: -96 }, { lat: 19, lon: -82 }, { lat: 12, lon: -73 }, { lat: 7, lon: -80 },
+        { lat: 8, lon: -95 }, { lat: 14, lon: -110 }, { lat: 23, lon: -114 }, { lat: 32, lon: -124 },
+        { lat: 41, lon: -139 }, { lat: 50, lon: -162 }, { lat: 60, lon: -165 }
+      ]
+    },
+    {
+      points: [
+        { lat: 71, lon: -24 }, { lat: 64, lon: -8 }, { lat: 58, lon: 6 }, { lat: 54, lon: 14 },
+        { lat: 49, lon: 12 }, { lat: 44, lon: 2 }, { lat: 41, lon: -5 }, { lat: 36, lon: -8 },
+        { lat: 35, lon: -15 }, { lat: 39, lon: -24 }, { lat: 48, lon: -25 }, { lat: 56, lon: -16 },
+        { lat: 62, lon: -20 }
+      ]
+    },
+    {
+      points: [
+        { lat: 45, lon: -5 }, { lat: 38, lon: 2 }, { lat: 35, lon: 14 }, { lat: 32, lon: 24 },
+        { lat: 26, lon: 29 }, { lat: 19, lon: 20 }, { lat: 14, lon: 12 }, { lat: 10, lon: 8 },
+        { lat: 5, lon: 8 }, { lat: -1, lon: 14 }, { lat: -8, lon: 13 }, { lat: -15, lon: 18 },
+        { lat: -22, lon: 15 }, { lat: -29, lon: 12 }, { lat: -34, lon: 18 }, { lat: -36, lon: 28 },
+        { lat: -27, lon: 32 }, { lat: -20, lon: 40 }, { lat: -8, lon: 40 }, { lat: 2, lon: 35 },
+        { lat: 10, lon: 30 }, { lat: 18, lon: 25 }, { lat: 28, lon: 18 }, { lat: 35, lon: 10 }
+      ]
+    },
+    {
+      points: [
+        { lat: 57, lon: 58 }, { lat: 50, lon: 52 }, { lat: 45, lon: 61 }, { lat: 40, lon: 74 },
+        { lat: 35, lon: 86 }, { lat: 27, lon: 94 }, { lat: 18, lon: 94 }, { lat: 10, lon: 90 },
+        { lat: 2, lon: 94 }, { lat: -6, lon: 94 }, { lat: -13, lon: 100 }, { lat: -20, lon: 97 },
+        { lat: -28, lon: 100 }, { lat: -37, lon: 117 }, { lat: -33, lon: 131 }, { lat: -18, lon: 132 },
+        { lat: -6, lon: 129 }, { lat: 6, lon: 123 }, { lat: 22, lon: 115 }, { lat: 35, lon: 103 },
+        { lat: 45, lon: 86 }, { lat: 52, lon: 72 }, { lat: 56, lon: 65 }
+      ]
+    },
+    {
+      points: [
+        { lat: -10, lon: 112 }, { lat: -20, lon: 120 }, { lat: -32, lon: 132 }, { lat: -31, lon: 146 },
+        { lat: -24, lon: 154 }, { lat: -14, lon: 148 }, { lat: -4, lon: 137 }, { lat: 6, lon: 130 }
+      ]
+    }
   ];
 
-  function drawFallbackLandmasses() {
-    ctx.save();
-    ctx.fillStyle = 'rgba(255,255,255,0.08)';
-    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-    ctx.lineWidth = 1;
-
-    fallbackLandmasses.forEach(shape => {
-      let started = false;
-      ctx.beginPath();
-      shape.forEach((coord, idx) => {
-        const cart = latLonToCartesian(coord.lat, coord.lon, radius * 0.94);
-        const rotated = rotatePoint(cart, rotX, rotY);
-        if (rotated.z <= 0) {
-          started = false;
-          return;
-        }
-        const p = project(rotated);
-        if (!started) {
-          ctx.moveTo(p.x, p.y);
-          started = true;
-        } else {
-          ctx.lineTo(p.x, p.y);
-        }
-      });
-      if (started) {
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-      }
-    });
-    ctx.restore();
+  function latLonToCanvas(lat, lon) {
+    const rect = canvas.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const marginX = width * 0.08;
+    const marginY = height * 0.08;
+    const mapW = width - marginX * 2;
+    const mapH = height - marginY * 2;
+    return {
+      x: marginX + ((lon + 180) / 360) * mapW,
+      y: marginY + ((90 - lat) / 180) * mapH
+    };
   }
 
-  // Compute projected positions for pins
-  function computePins() {
-    radius = Math.min(canvas.width / (2*(window.devicePixelRatio||1)), canvas.height / (2*(window.devicePixelRatio||1))) - 26;
-    return clients.map(c => {
-      const cart = latLonToCartesian(c.lat, c.lon, radius * 0.92);
-      const rotated = rotatePoint(cart, rotX, rotY);
-      const proj = project(rotated);
-      return Object.assign({}, c, { cart, rotated, proj, visible: rotated.z > -radius * 0.95 });
-    });
-  }
+  function drawWorldMap() {
+    const rect = canvas.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
 
-  // Draw functions
-  function drawGlobe() {
-    const c = center();
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // outer glow
-    const grad = ctx.createRadialGradient(c.x, c.y, radius * 0.3, c.x, c.y, radius * 1.1);
-    grad.addColorStop(0, 'rgba(0,240,255,0.06)');
-    grad.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = grad;
+    ctx.clearRect(0, 0, width, height);
+
+    const ocean = ctx.createLinearGradient(0, 0, width, height);
+    ocean.addColorStop(0, 'rgba(2, 10, 25, 0.96)');
+    ocean.addColorStop(1, 'rgba(4, 18, 33, 0.96)');
+    ctx.fillStyle = ocean;
+    ctx.fillRect(0, 0, width, height);
+
+    const glow = ctx.createRadialGradient(width * 0.62, height * 0.34, 0, width * 0.62, height * 0.34, width * 0.6);
+    glow.addColorStop(0, 'rgba(0, 240, 255, 0.16)');
+    glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(c.x, c.y, radius + 8, 0, Math.PI * 2);
+    ctx.arc(width * 0.62, height * 0.34, width * 0.6, 0, Math.PI * 2);
     ctx.fill();
 
-    // globe base
-    // draw textured map clipped to globe
     ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
-    ctx.arc(c.x, c.y, radius, 0, Math.PI * 2);
-    ctx.clip();
-    if (mapLoaded) {
-      const mapH = radius * 2;
-      const mapW = mapH * 2; // equirectangular ratio
-      const offset = ((rotY / (Math.PI * 2)) * mapW) % mapW;
-      ctx.drawImage(mapImg, -offset + c.x - mapW/2, c.y - mapH/2, mapW, mapH);
-      ctx.drawImage(mapImg, -offset + c.x - mapW/2 + mapW, c.y - mapH/2, mapW, mapH);
-    } else {
-      const globeGrad = ctx.createRadialGradient(c.x - radius * 0.3, c.y - radius * 0.3, radius * 0.1, c.x, c.y, radius);
-      globeGrad.addColorStop(0, 'rgba(0,114,255,0.08)');
-      globeGrad.addColorStop(1, 'rgba(10,10,10,0.85)');
-      ctx.fillStyle = globeGrad;
-      ctx.fillRect(c.x - radius, c.y - radius, radius * 2, radius * 2);
-      drawFallbackLandmasses();
-    }
+    ctx.rect(width * 0.08, height * 0.08, width * 0.84, height * 0.84);
+    ctx.stroke();
     ctx.restore();
 
-    // rim
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = 'rgba(0,240,255,0.12)';
-    ctx.beginPath();
-    ctx.arc(c.x, c.y, radius, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // lat / lon grid
-    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-    ctx.lineWidth = 0.8;
-    for (let lat = -60; lat <= 60; lat += 20) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(0, 240, 255, 0.14)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.36)';
+    ctx.lineWidth = 1.4;
+    continentShapes.forEach(shape => {
+      if (!shape.points || shape.points.length < 3) return;
       ctx.beginPath();
-      const points = 80;
-      for (let i = 0; i <= points; i++) {
-        const lon = (i / points) * 360 - 180;
-        const cart = latLonToCartesian(lat, lon, radius);
-        const r = rotatePoint(cart, rotX, rotY);
-        const p = project(r);
-        if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
-      }
+      shape.points.forEach((point, index) => {
+        const p = latLonToCanvas(point.lat, point.lon);
+        if (index === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      });
+      ctx.closePath();
+      ctx.fill();
       ctx.stroke();
-    }
+    });
+    ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 0.8;
     for (let lon = -180; lon <= 180; lon += 30) {
       ctx.beginPath();
-      const points = 80;
-      for (let i = 0; i <= points; i++) {
-        const lat = (i / points) * 180 - 90;
-        const cart = latLonToCartesian(lat, lon, radius);
-        const r = rotatePoint(cart, rotX, rotY);
-        const p = project(r);
-        if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
-      }
+      const p1 = latLonToCanvas(90, lon);
+      const p2 = latLonToCanvas(-90, lon);
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
       ctx.stroke();
     }
+    for (let lat = -60; lat <= 60; lat += 30) {
+      ctx.beginPath();
+      const p1 = latLonToCanvas(lat, -180);
+      const p2 = latLonToCanvas(lat, 180);
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function computePins() {
+    return clients.map(c => ({
+      ...c,
+      proj: latLonToCanvas(c.lat, c.lon),
+      visible: true
+    }));
   }
 
   function drawPinsAndArcs() {
     const pinSet = computePins();
 
-    // draw arcs between consecutive clients in the array
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.23)';
+    ctx.lineWidth = 1.3;
     for (let i = 0; i < pinSet.length - 1; i++) {
       const a = pinSet[i];
       const b = pinSet[i + 1];
-      if (!a.visible && !b.visible) continue;
-      // great-circle interpolation
-      const steps = 60;
       ctx.beginPath();
-      for (let t = 0; t <= steps; t++) {
-        const f = t / steps;
-        // slerp between normalized cart vectors
-        const va = normalizeVec(a.cart);
-        const vb = normalizeVec(b.cart);
-        const angle = Math.acos(Math.min(1, Math.max(-1, dot(va, vb))));
-        const sinAngle = Math.sin(angle) || 1e-6;
-        const s1 = Math.sin((1 - f) * angle) / sinAngle;
-        const s2 = Math.sin(f * angle) / sinAngle;
-        const vx = va.x * s1 + vb.x * s2;
-        const vy = va.y * s1 + vb.y * s2;
-        const vz = va.z * s1 + vb.z * s2;
-        const pt = rotatePoint({ x: vx * radius * 0.98, y: vy * radius * 0.98, z: vz * radius * 0.98 }, rotX, rotY);
-        const p = project(pt);
-        if (t === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
-      }
-      ctx.strokeStyle = 'rgba(0,240,255,0.22)';
-      ctx.lineWidth = 1.6;
+      ctx.moveTo(a.proj.x, a.proj.y);
+      ctx.lineTo(b.proj.x, b.proj.y);
       ctx.stroke();
     }
+    ctx.restore();
 
-    // draw pins
     pinSet.forEach(p => {
-      if (!p.visible) return;
-      // glow
       ctx.beginPath();
       ctx.fillStyle = p.color + '33';
       ctx.shadowColor = p.color;
@@ -334,12 +254,12 @@ function initGlobe() {
       ctx.arc(p.proj.x, p.proj.y, 6, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
-      // core
+
       ctx.beginPath();
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = '#ffffff';
       ctx.arc(p.proj.x, p.proj.y, 3, 0, Math.PI * 2);
       ctx.fill();
-      // ring
+
       ctx.beginPath();
       ctx.strokeStyle = p.color;
       ctx.lineWidth = 1.2;
@@ -350,39 +270,29 @@ function initGlobe() {
     return pinSet;
   }
 
-  // Vec helpers
-  function dot(a, b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
-  function len(v) { return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z); }
-  function normalizeVec(v) { const l = len(v) || 1; return { x: v.x / l, y: v.y / l, z: v.z / l }; }
-
-  // Interaction
   let lastPinSet = [];
   canvas.addEventListener('click', (ev) => {
     const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    const mx = (ev.clientX - rect.left) * (dpr);
-    const my = (ev.clientY - rect.top) * (dpr);
-    // find nearest visible pin
+    const mx = ev.clientX - rect.left;
+    const my = ev.clientY - rect.top;
     let nearest = null;
     let nd = 9999;
     lastPinSet.forEach(p => {
-      if (!p.visible) return;
-      const dx = mx / dpr - p.proj.x;
-      const dy = my / dpr - p.proj.y;
+      const dx = mx - p.proj.x;
+      const dy = my - p.proj.y;
       const dist = Math.hypot(dx, dy);
       if (dist < nd && dist < 22) { nd = dist; nearest = p; }
     });
     if (nearest) {
-      showPopupFor(nearest, rect);
-      rotateToClient(nearest);
+      showPopupFor(nearest);
     } else {
       hidePopup();
     }
   });
 
-  function showPopupFor(p, rect) {
+  function showPopupFor(p) {
     if (!popup) return;
-    popup.innerHTML = `<button class=\"close-btn\">✕</button><div class=\"title\">${p.title}</div><div class=\"desc\">${p.desc}</div>`;
+    popup.innerHTML = `<button class="close-btn">✕</button><div class="title">${p.title}</div><div class="desc">${p.desc}</div>`;
     popup.classList.remove('hidden');
 
     const containerRect = canvas.getBoundingClientRect();
@@ -417,55 +327,11 @@ function initGlobe() {
     popup.classList.add('hidden');
   }
 
-  function rotateToClient(client) {
-    // target rotations to bring the pin roughly to center
-    // approximate: rotY should be -lon, rotX should be lat*0.6
-    targetRotY = degToRad(-client.lon);
-    targetRotX = degToRad(client.lat) * 0.6;
-  }
-
-  // Mouse / touch drag to rotate globe
-  let isDragging = false;
-  let lastX = 0, lastY = 0;
-  const dragSensitivity = 0.007; // radians per pixel
-
-  canvas.addEventListener('pointerdown', (e) => {
-    isDragging = true;
-    lastX = e.clientX;
-    lastY = e.clientY;
-    canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);
-  });
-  window.addEventListener('pointermove', (e) => {
-    if (!isDragging) return;
-    const dx = e.clientX - lastX;
-    const dy = e.clientY - lastY;
-    lastX = e.clientX; lastY = e.clientY;
-    // update target rotations
-    targetRotY += dx * dragSensitivity;
-    targetRotX += dy * dragSensitivity * -1; // invert so dragging up rotates north
-    // clamp latitude rotation
-    const maxLat = Math.PI / 3;
-    targetRotX = Math.max(-maxLat, Math.min(maxLat, targetRotX));
-    // hide popup while dragging
-    hidePopup();
-  });
-  window.addEventListener('pointerup', (e) => { isDragging = false; });
-
-  // Smooth animation loop
   function animate() {
-    // ease rotations
-    const ease = 0.08;
-    rotY += (targetRotY - rotY) * ease;
-    rotX += (targetRotX - rotX) * ease;
-
-    drawGlobe();
+    drawWorldMap();
     lastPinSet = drawPinsAndArcs();
     requestAnimationFrame(animate);
   }
-
-  // Initialize default rotation to show Europe/UK
-  targetRotY = degToRad(10);
-  targetRotX = degToRad(0);
 
   animate();
 }
