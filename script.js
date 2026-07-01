@@ -100,10 +100,15 @@ function initGlobe() {
 
   // Load equirectangular world map texture for visible outlines
   const mapImg = new Image();
-  mapImg.crossOrigin = 'anonymous';
   mapImg.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/World_map_-_low_resolution.svg/2000px-World_map_-_low_resolution.svg.png';
   let mapLoaded = false;
-  mapImg.onload = () => { mapLoaded = true; };
+  let mapError = false;
+  mapImg.onload = () => { mapLoaded = true; mapError = false; };
+  mapImg.onerror = () => {
+    mapLoaded = false;
+    mapError = true;
+    console.warn('Globe map texture failed to load, using fallback outline.');
+  };
 
   // Globe rotation state
   let rotY = 0; // longitude rotation (radians)
@@ -142,6 +147,68 @@ function initGlobe() {
     return { x: c.x + p.x * scale, y: c.y - p.y * scale, z: p.z };
   }
 
+  const fallbackLandmasses = [
+    [
+      { lat: 60, lon: -145 }, { lat: 56, lon: -135 }, { lat: 50, lon: -120 }, { lat: 45, lon: -100 },
+      { lat: 35, lon: -90 }, { lat: 30, lon: -80 }, { lat: 22, lon: -75 }, { lat: 10, lon: -80 },
+      { lat: 2, lon: -75 }, { lat: -12, lon: -60 }, { lat: -22, lon: -55 }, { lat: -30, lon: -60 },
+      { lat: -20, lon: -80 }, { lat: -12, lon: -100 }, { lat: 10, lon: -110 }, { lat: 30, lon: -120 },
+      { lat: 45, lon: -135 }, { lat: 55, lon: -145 }
+    ],
+    [
+      { lat: 70, lon: -20 }, { lat: 65, lon: 0 }, { lat: 60, lon: 20 }, { lat: 55, lon: 30 },
+      { lat: 50, lon: 10 }, { lat: 50, lon: -10 }, { lat: 58, lon: -20 }, { lat: 66, lon: -25 }
+    ],
+    [
+      { lat: 45, lon: 0 }, { lat: 35, lon: 10 }, { lat: 30, lon: 20 }, { lat: 10, lon: 20 },
+      { lat: 5, lon: 10 }, { lat: -5, lon: 10 }, { lat: -10, lon: 20 }, { lat: -20, lon: 20 },
+      { lat: -30, lon: 10 }, { lat: -35, lon: 0 }, { lat: -20, lon: -10 }, { lat: 0, lon: -10 }
+    ],
+    [
+      { lat: 50, lon: 60 }, { lat: 45, lon: 70 }, { lat: 40, lon: 85 }, { lat: 30, lon: 95 },
+      { lat: 15, lon: 100 }, { lat: 5, lon: 105 }, { lat: -10, lon: 100 }, { lat: -20, lon: 95 },
+      { lat: -30, lon: 100 }, { lat: -40, lon: 115 }, { lat: -35, lon: 130 }, { lat: -15, lon: 130 },
+      { lat: 5, lon: 130 }, { lat: 20, lon: 120 }, { lat: 35, lon: 110 }, { lat: 47, lon: 95 }
+    ],
+    [
+      { lat: -10, lon: 110 }, { lat: -20, lon: 120 }, { lat: -30, lon: 135 }, { lat: -25, lon: 150 },
+      { lat: -15, lon: 145 }, { lat: -5, lon: 140 }, { lat: 5, lon: 130 }
+    ]
+  ];
+
+  function drawFallbackLandmasses() {
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.lineWidth = 1;
+
+    fallbackLandmasses.forEach(shape => {
+      let started = false;
+      ctx.beginPath();
+      shape.forEach((coord, idx) => {
+        const cart = latLonToCartesian(coord.lat, coord.lon, radius * 0.94);
+        const rotated = rotatePoint(cart, rotX, rotY);
+        if (rotated.z <= 0) {
+          started = false;
+          return;
+        }
+        const p = project(rotated);
+        if (!started) {
+          ctx.moveTo(p.x, p.y);
+          started = true;
+        } else {
+          ctx.lineTo(p.x, p.y);
+        }
+      });
+      if (started) {
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+    });
+    ctx.restore();
+  }
+
   // Compute projected positions for pins
   function computePins() {
     radius = Math.min(canvas.width / (2*(window.devicePixelRatio||1)), canvas.height / (2*(window.devicePixelRatio||1))) - 26;
@@ -175,17 +242,16 @@ function initGlobe() {
     if (mapLoaded) {
       const mapH = radius * 2;
       const mapW = mapH * 2; // equirectangular ratio
-      // offset based on rotation (rotY)
       const offset = ((rotY / (Math.PI * 2)) * mapW) % mapW;
-      // draw two copies to allow horizontal wrap
       ctx.drawImage(mapImg, -offset + c.x - mapW/2, c.y - mapH/2, mapW, mapH);
       ctx.drawImage(mapImg, -offset + c.x - mapW/2 + mapW, c.y - mapH/2, mapW, mapH);
     } else {
       const globeGrad = ctx.createRadialGradient(c.x - radius * 0.3, c.y - radius * 0.3, radius * 0.1, c.x, c.y, radius);
-      globeGrad.addColorStop(0, 'rgba(0,114,255,0.06)');
-      globeGrad.addColorStop(1, 'rgba(10,10,10,0.6)');
+      globeGrad.addColorStop(0, 'rgba(0,114,255,0.08)');
+      globeGrad.addColorStop(1, 'rgba(10,10,10,0.85)');
       ctx.fillStyle = globeGrad;
       ctx.fillRect(c.x - radius, c.y - radius, radius * 2, radius * 2);
+      drawFallbackLandmasses();
     }
     ctx.restore();
 
@@ -317,15 +383,31 @@ function initGlobe() {
   function showPopupFor(p, rect) {
     if (!popup) return;
     popup.innerHTML = `<button class=\"close-btn\">✕</button><div class=\"title\">${p.title}</div><div class=\"desc\">${p.desc}</div>`;
-    const dpr = window.devicePixelRatio || 1;
     popup.classList.remove('hidden');
-    popup.style.left = (p.proj.x) + 'px';
-    popup.style.top = (p.proj.y) + 'px';
-    // position relative to container
+
     const containerRect = canvas.getBoundingClientRect();
-    popup.style.left = (p.proj.x) + 'px';
-    popup.style.top = (p.proj.y) + 'px';
-    // Attach close handler
+    let left = p.proj.x;
+    let top = p.proj.y;
+    popup.style.left = `${left}px`;
+    popup.style.top = `${top}px`;
+
+    const popupRect = popup.getBoundingClientRect();
+    const edgePadding = 16;
+    if (popupRect.left < containerRect.left + edgePadding) {
+      popup.style.left = `${left + (containerRect.left + edgePadding - popupRect.left)}px`;
+      popup.style.transform = 'translate(0, -120%)';
+    } else if (popupRect.right > containerRect.right - edgePadding) {
+      popup.style.left = `${left - (popupRect.right - containerRect.right + edgePadding)}px`;
+      popup.style.transform = 'translate(0, -120%)';
+    } else {
+      popup.style.transform = 'translate(-50%, -120%)';
+    }
+
+    if (popupRect.top < containerRect.top + edgePadding) {
+      popup.style.top = `${top + edgePadding}px`;
+      popup.style.transform = 'translate(-50%, 0)';
+    }
+
     const btn = popup.querySelector('.close-btn');
     if (btn) btn.onclick = () => { hidePopup(); };
   }
