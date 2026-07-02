@@ -66,270 +66,641 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
 
 /* --- Neon World Map Implementation --- */
 function initGlobe() {
+  // Guard against missing D3 library (e.g. offline mode)
+  if (typeof d3 === 'undefined') {
+    const container = document.getElementById('client-map');
+    if (container) {
+      container.innerHTML = `<div class="flex items-center justify-center h-full text-gray-400 text-xs text-center p-4">
+        <div>
+          <i class="fa-solid fa-satellite-dish text-neoncyan text-2xl mb-3 animate-pulse"></i>
+          <p class="font-tech text-white tracking-wider">OFFLINE - RADAR UPLINK DESYNC</p>
+          <p class="mt-1 text-gray-500 max-w-xs mx-auto">Please connect to the internet to load external D3 assets and initialize the 3D neon globe.</p>
+        </div>
+      </div>`;
+    }
+    return;
+  }
+
   const canvas = document.getElementById('globe-canvas');
   const popup = document.getElementById('map-popup');
   if (!canvas || !canvas.getContext) return;
   const ctx = canvas.getContext('2d');
 
+  // State variables (defined early to avoid Temporal Dead Zone issues)
+  let isDragging = false;
+  let previousMousePosition = { x: 0, y: 0 };
+  let activePin = null;
+  let hoveredPin = null;
+
+  // Client Experience locations (chronological order)
+  const clients = [
+    {
+      id: 'farmers_eagent',
+      client: 'Farmers Insurance',
+      project: 'eAgent Dashboard',
+      location: 'Hyderabad, Telangana India',
+      lat: 17.3850,
+      lon: 78.4867,
+      color: '#39ff14', // neongreen
+      experience: [
+        'Managed application support, defect resolution, and incident handling, improving application stability by <strong class="glow-text-green-sm">20%+</strong> through proactive monitoring and rapid issue remediation.',
+        'Developed and maintained key application modules and change requests, enabling continuous platform enhancements while ensuring <strong class="glow-text-green-sm">high-quality code delivery</strong>.',
+        'Monitored server health and application performance, providing actionable insights through daily reporting and technical reviews that improved <strong class="glow-text-green-sm">service reliability and stakeholder visibility</strong>.'
+      ]
+    },
+    {
+      id: 'farmers_dashboard',
+      client: 'Farmers Insurance',
+      project: 'eFolio Dashboard',
+      location: 'Woodland Hills, California USA',
+      lat: 34.1683,
+      lon: -118.6058,
+      color: '#39ff14', // neongreen
+      experience: [
+        'Developed and enhanced business-critical application components, delivering change requests with <strong class="glow-text-green-sm">100% adherence</strong> to functional requirements and improving overall system usability.',
+        'Partnered with client and onsite stakeholders to translate business requirements into scalable technical solutions, enabling <strong class="glow-text-green-sm">faster delivery cycles</strong> and improved customer satisfaction.',
+        'Implemented business logic and application enhancements, contributing to <strong class="glow-text-green-sm">greater process efficiency</strong> and reducing manual intervention across key workflows.'
+      ]
+    },
+    {
+      id: 'att',
+      client: 'AT&T',
+      project: 'Common Services Integration',
+      location: 'Hyderabad, Telangana India',
+      lat: 17.3850,
+      lon: 78.4867,
+      color: '#0072ff', // neonblue
+      experience: [
+        'Provided production support for mission-critical middleware applications, achieving <strong class="glow-text-blue-sm">99.9% service availability</strong> through proactive monitoring, incident management, and SLA adherence.',
+        'Performed root cause analysis, patch deployments, DR synchronization, and migration activities, reducing recurring production incidents by <strong class="glow-text-blue-sm">25%+</strong> and strengthening platform stability.',
+        'Collaborated with development, testing, and vendor teams to resolve complex issues, optimize JVM performance, and ensure successful delivery of releases within <strong class="glow-text-blue-sm">defined change windows</strong>.'
+      ]
+    },
+    {
+      id: 'homeserve',
+      client: 'HomeServe PLC',
+      project: 'HS Ensura',
+      location: 'Chattanooga, Tennessee USA',
+      lat: 35.0456,
+      lon: -85.3097,
+      color: '#ff6ec7', // neonpink
+      experience: [
+        'Led pricing and product configuration across 200+ On-Bill and Off-Bill partners, improving pricing accuracy by <strong class="glow-text-pink-sm">~37%</strong> and reducing configuration turnaround times by <strong class="glow-text-pink-sm">21%</strong> through process optimization and automation.',
+        'Streamlined price increase and revenue-cycle workflows, collaborating with business stakeholders to enhance operational efficiency while ensuring <strong class="glow-text-pink-sm">seamless integration</strong> across Ensura and partner platforms.',
+        'Drove UAT, application support, and synchronization testing, contributing to <strong class="glow-text-pink-sm">99% configuration quality</strong>, faster issue resolution, and improved stakeholder confidence.'
+      ]
+    },
+    {
+      id: 'fiserv_kent',
+      client: 'Fiserv',
+      project: 'KENT',
+      location: 'Chennai, Tamil Nadu India',
+      lat: 13.0827,
+      lon: 80.2707,
+      color: '#00f0ff', // neoncyan
+      experience: [
+        'Led client onboarding and platform configuration activities, successfully configuring media, letters, statements, and notices for multiple clients, reducing deployment effort by <strong class="glow-text-cyan-sm">30%</strong> through standardized implementation practices.',
+        'Managed end-to-end validation, testing, and migration processes across QA and Development environments, achieving <strong class="glow-text-cyan-sm">99%+ configuration accuracy</strong> and minimizing production defects.',
+        'Collaborated closely with onshore teams during sprint and release cycles, accelerating wave-release readiness by <strong class="glow-text-cyan-sm">20%</strong> and ensuring seamless delivery of client-specific requirements through rigorous UAT.'
+      ]
+    },
+    {
+      id: 'fiserv_bin',
+      client: 'Fiserv',
+      project: '8 Digit BIN conversion',
+      location: 'Chennai, Tamil Nadu India',
+      lat: 13.0827,
+      lon: 80.2707,
+      color: '#00f0ff', // neoncyan
+      experience: [
+        'Delivered end-to-end implementation projects for enterprise clients, consistently achieving <strong class="glow-text-cyan-sm">100% adherence</strong> to project timelines and budget commitments while ensuring smooth stakeholder alignment.',
+        'Conducted in-depth business and data analysis, providing <strong class="glow-text-cyan-sm">actionable insights</strong> that improved decision-making efficiency and enhanced implementation outcomes.',
+        'Drove process and organizational optimization initiatives, contributing to improved operational effectiveness, <strong class="glow-text-cyan-sm">faster adoption rates</strong>, and measurable business value realization for clients.'
+      ]
+    },
+    {
+      id: 'cityguilds',
+      client: 'City & Guilds',
+      project: '',
+      location: 'Wakefield, West Yorkshire UK',
+      lat: 53.6808,
+      lon: -1.4977,
+      color: '#bd00ff', // neonpurple
+      experience: [
+        'Excelled in City & Guilds to implement process improvements and automation solutions, leading to a <strong class="glow-text-purple-sm">35% increase</strong> in operational efficiency.',
+        'Enhanced reporting capabilities and improved <strong class="glow-text-purple-sm">data visibility</strong> for better decision-making across teams.'
+      ]
+    }
+  ];
+
+  let width = 600;
+  let height = 360;
+  let dpr = window.devicePixelRatio || 1;
+
+  // D3 Projection and Path Generator
+  const projection = d3.geoOrthographic()
+    .scale(150)
+    .translate([width / 2, height / 2])
+    .clipAngle(90);
+
+  const pathGenerator = d3.geoPath(projection, ctx);
+  const graticule = d3.geoGraticule();
+
+  // Rotation angles: [yaw, pitch, roll]
+  let rotation = [0, -20, 0];
+  projection.rotate(rotation);
+
+  let worldData = null;
+  let countries = null;
+  let globeLoaded = false;
+
+  // Fetch world map data
+  fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+    .then(response => response.json())
+    .then(data => {
+      worldData = data;
+      if (typeof topojson !== 'undefined') {
+        countries = topojson.feature(worldData, worldData.objects.countries);
+        globeLoaded = true;
+      }
+    })
+    .catch(err => {
+      console.warn("Failed to load country outlines, falling back to graticule radar mode.", err);
+    });
+
+  // Zoom controls configuration
+  let zoomScale = 1.0;
+  const zoomSlider = document.getElementById('globe-zoom');
+  const btnZoomIn = document.getElementById('btn-zoom-in');
+  const btnZoomOut = document.getElementById('btn-zoom-out');
+
+  function updateZoom() {
+    if (zoomSlider) {
+      zoomSlider.value = zoomScale;
+    }
+    const sphereRadius = Math.min(width, height) * 0.42 * zoomScale;
+    projection.scale(sphereRadius).translate([width / 2, height / 2]);
+    if (activePin) {
+      positionPopup(activePin);
+    }
+  }
+
+  if (zoomSlider) {
+    zoomSlider.addEventListener('input', (e) => {
+      zoomScale = parseFloat(e.target.value);
+      updateZoom();
+    });
+  }
+
+  if (btnZoomIn) {
+    btnZoomIn.addEventListener('click', () => {
+      zoomScale = Math.min(3.0, zoomScale + 0.15);
+      updateZoom();
+    });
+  }
+
+  if (btnZoomOut) {
+    btnZoomOut.addEventListener('click', () => {
+      zoomScale = Math.max(0.6, zoomScale - 0.15);
+      updateZoom();
+    });
+  }
+
   function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.max(600, rect.width) * dpr;
-    canvas.height = Math.max(360, rect.height) * dpr;
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
+    dpr = window.devicePixelRatio || 1;
+    width = rect.width;
+    height = rect.height;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Adjust scale based on size and zoomScale
+    updateZoom();
   }
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
-  const clients = [
-    { id: 'cityguilds', title: 'City & Guilds', lat: 53.8008, lon: -1.5491, color: '#bd00ff', desc: 'Excelled in City & Guilds to implement process improvements and automation solutions, leading to a 35% increase in operational efficiency and enhanced reporting capabilities for better decision-making.' },
-    { id: 'fiserv_bin', title: 'Fiserv - 8 Digit BIN Conversion', lat: 13.0827, lon: 80.2707, color: '#00f0ff', desc: 'Delivered end-to-end implementation projects for enterprise clients, consistently achieving 100% adherence to project timelines and budget commitments while ensuring smooth stakeholder alignment. Conducted in-depth business and data analysis, providing actionable insights that improved decision-making efficiency and enhanced implementation outcomes. Drove process and organizational optimization initiatives, contributing to improved operational effectiveness, faster adoption rates, and measurable business value realization for clients.' },
-    { id: 'fiserv_kent', title: 'Fiserv - Kent', lat: 17.3850, lon: 78.4867, color: '#00f0ff', desc: 'Led client onboarding and platform configuration activities, successfully configuring media, letters, statements, and notices for multiple clients, reducing deployment effort by 30% through standardized implementation practices. Managed end-to-end validation, testing, and migration processes across QA and Development environments, achieving 99%+ configuration accuracy and minimizing production defects. Collaborated closely with onshore teams during sprint and release cycles, accelerating wave-release readiness by 20% and ensuring seamless delivery of client-specific requirements through rigorous UAT and quality assurance.' },
-    { id: 'homeserve', title: 'HomeServe PLC - HS Ensura', lat: 35.0456, lon: -85.3097, color: '#ff6ec7', desc: 'Led pricing and product configuration across 200+ On-Bill and Off-Bill partners, improving pricing accuracy by ~37% and reducing configuration turnaround times by 21% through process optimization and automation. Streamlined price increase and revenue-cycle workflows, collaborating with business stakeholders to enhance operational efficiency while ensuring seamless integration across Ensura and partner platforms. Drove UAT, application support, and synchronization testing, contributing to 99% configuration quality, faster issue resolution, and improved stakeholder confidence in product launches and pricing changes.' },
-    { id: 'att', title: 'AT&T - Common Services Integration', lat: 17.3850, lon: 78.4867, color: '#0072ff', desc: 'Provided production support for mission-critical middleware applications, achieving 99.9% service availability through proactive monitoring, incident management, and SLA adherence. Performed root cause analysis, patch deployments, DR synchronization, and migration activities, reducing recurring production incidents by 25%+ and strengthening platform stability. Collaborated with development, testing, and vendor teams to resolve complex issues, optimize JVM performance, and ensure successful delivery of releases within defined change windows.' },
-    { id: 'farmers_dashboard', title: 'Farmers Insurance - eFolio Dashboard', lat: 34.1683, lon: -118.6058, color: '#39ff14', desc: 'Developed and enhanced business-critical application components, delivering change requests with 100% adherence to functional requirements and improving overall system usability. Partnered with client and onsite stakeholders to translate business requirements into scalable technical solutions, enabling faster delivery cycles and improved customer satisfaction. Implemented business logic and application enhancements, contributing to greater process efficiency and reducing manual intervention across key insurance workflows.' },
-    { id: 'farmers_eagent', title: 'Farmers Insurance - eAgent Dashboard', lat: 17.3850, lon: 78.4867, color: '#39ff14', desc: 'Managed application support, defect resolution, and incident handling, improving application stability by 20%+ through proactive monitoring and rapid issue remediation. Developed and maintained key application modules and change requests, enabling continuous platform enhancements while ensuring high-quality code delivery. Monitored server health and application performance, providing actionable insights through daily reporting and technical reviews that improved service reliability and stakeholder visibility.' }
-  ];
+  // Mouse Drag Rotation configuration
 
-  const continentShapes = [
-    {
-      points: [
-        { lat: 72, lon: -168 }, { lat: 70, lon: -138 }, { lat: 64, lon: -125 }, { lat: 58, lon: -120 },
-        { lat: 50, lon: -127 }, { lat: 46, lon: -123 }, { lat: 42, lon: -130 }, { lat: 34, lon: -119 },
-        { lat: 28, lon: -96 }, { lat: 19, lon: -82 }, { lat: 12, lon: -73 }, { lat: 7, lon: -80 },
-        { lat: 8, lon: -95 }, { lat: 14, lon: -110 }, { lat: 23, lon: -114 }, { lat: 32, lon: -124 },
-        { lat: 41, lon: -139 }, { lat: 50, lon: -162 }, { lat: 60, lon: -165 }
-      ]
-    },
-    {
-      points: [
-        { lat: 71, lon: -24 }, { lat: 64, lon: -8 }, { lat: 58, lon: 6 }, { lat: 54, lon: 14 },
-        { lat: 49, lon: 12 }, { lat: 44, lon: 2 }, { lat: 41, lon: -5 }, { lat: 36, lon: -8 },
-        { lat: 35, lon: -15 }, { lat: 39, lon: -24 }, { lat: 48, lon: -25 }, { lat: 56, lon: -16 },
-        { lat: 62, lon: -20 }
-      ]
-    },
-    {
-      points: [
-        { lat: 45, lon: -5 }, { lat: 38, lon: 2 }, { lat: 35, lon: 14 }, { lat: 32, lon: 24 },
-        { lat: 26, lon: 29 }, { lat: 19, lon: 20 }, { lat: 14, lon: 12 }, { lat: 10, lon: 8 },
-        { lat: 5, lon: 8 }, { lat: -1, lon: 14 }, { lat: -8, lon: 13 }, { lat: -15, lon: 18 },
-        { lat: -22, lon: 15 }, { lat: -29, lon: 12 }, { lat: -34, lon: 18 }, { lat: -36, lon: 28 },
-        { lat: -27, lon: 32 }, { lat: -20, lon: 40 }, { lat: -8, lon: 40 }, { lat: 2, lon: 35 },
-        { lat: 10, lon: 30 }, { lat: 18, lon: 25 }, { lat: 28, lon: 18 }, { lat: 35, lon: 10 }
-      ]
-    },
-    {
-      points: [
-        { lat: 57, lon: 58 }, { lat: 50, lon: 52 }, { lat: 45, lon: 61 }, { lat: 40, lon: 74 },
-        { lat: 35, lon: 86 }, { lat: 27, lon: 94 }, { lat: 18, lon: 94 }, { lat: 10, lon: 90 },
-        { lat: 2, lon: 94 }, { lat: -6, lon: 94 }, { lat: -13, lon: 100 }, { lat: -20, lon: 97 },
-        { lat: -28, lon: 100 }, { lat: -37, lon: 117 }, { lat: -33, lon: 131 }, { lat: -18, lon: 132 },
-        { lat: -6, lon: 129 }, { lat: 6, lon: 123 }, { lat: 22, lon: 115 }, { lat: 35, lon: 103 },
-        { lat: 45, lon: 86 }, { lat: 52, lon: 72 }, { lat: 56, lon: 65 }
-      ]
-    },
-    {
-      points: [
-        { lat: -10, lon: 112 }, { lat: -20, lon: 120 }, { lat: -32, lon: 132 }, { lat: -31, lon: 146 },
-        { lat: -24, lon: 154 }, { lat: -14, lon: 148 }, { lat: -4, lon: 137 }, { lat: 6, lon: 130 }
-      ]
-    }
-  ];
+  // Smooth centering animation variables
+  let rotationInterpolator = null;
+  let transitionProgress = 0;
+  const transitionDuration = 35; // ~0.6s at 60fps
 
-  function latLonToCanvas(lat, lon) {
-    const rect = canvas.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const marginX = width * 0.08;
-    const marginY = height * 0.08;
-    const mapW = width - marginX * 2;
-    const mapH = height - marginY * 2;
-    return {
-      x: marginX + ((lon + 180) / 360) * mapW,
-      y: marginY + ((90 - lat) / 180) * mapH
-    };
+  function startCenterAnimation(lon, lat) {
+    const start = projection.rotate();
+    // To center [lon, lat] on screen, we rotate the globe to [-lon, -lat, start[2]]
+    const end = [-lon, -lat, start[2]];
+    rotationInterpolator = d3.interpolate(start, end);
+    transitionProgress = 0;
   }
 
-  function drawWorldMap() {
-    const rect = canvas.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
+  // Pre-calculate flight path segments
+  const pathSegments = [];
+  for (let i = 0; i < clients.length - 1; i++) {
+    const p1 = clients[i];
+    const p2 = clients[i + 1];
+    const dist = d3.geoDistance([p1.lon, p1.lat], [p2.lon, p2.lat]);
+    const interpolator = d3.geoInterpolate([p1.lon, p1.lat], [p2.lon, p2.lat]);
+    
+    const points = [];
+    const steps = Math.max(15, Math.round(dist * 35));
+    for (let s = 0; s <= steps; s++) {
+      points.push(interpolator(s / steps));
+    }
+    
+    pathSegments.push({
+      from: p1,
+      to: p2,
+      dist: dist,
+      interpolator: interpolator,
+      lineString: {
+        type: "LineString",
+        coordinates: points
+      }
+    });
+  }
+  const totalDistance = pathSegments.reduce((sum, seg) => sum + seg.dist, 0);
+  const totalTravelTime = 10000; // 10 seconds total journey loop
 
-    ctx.clearRect(0, 0, width, height);
-
-    const ocean = ctx.createLinearGradient(0, 0, width, height);
-    ocean.addColorStop(0, 'rgba(2, 10, 25, 0.96)');
-    ocean.addColorStop(1, 'rgba(4, 18, 33, 0.96)');
-    ctx.fillStyle = ocean;
-    ctx.fillRect(0, 0, width, height);
-
-    const glow = ctx.createRadialGradient(width * 0.62, height * 0.34, 0, width * 0.62, height * 0.34, width * 0.6);
-    glow.addColorStop(0, 'rgba(0, 240, 255, 0.16)');
-    glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = glow;
+  // Draw stem and glowing pin head
+  function drawPin(x, y, color, isHovered, labelText) {
+    // Stem
     ctx.beginPath();
-    ctx.arc(width * 0.62, height * 0.34, width * 0.6, 0, Math.PI * 2);
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y - 16);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // Pin head glow
+    ctx.beginPath();
+    ctx.arc(x, y - 16, 5, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = isHovered ? 18 : 8;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Pin head center white dot
+    ctx.beginPath();
+    ctx.arc(x, y - 16, 1.8, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
     ctx.fill();
 
-    ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-    ctx.lineWidth = 1.2;
+    // Base ring on surface
     ctx.beginPath();
-    ctx.rect(width * 0.08, height * 0.08, width * 0.84, height * 0.84);
+    ctx.ellipse(x, y, 5, 2.5, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.2;
     ctx.stroke();
-    ctx.restore();
 
-    ctx.save();
-    ctx.fillStyle = 'rgba(0, 240, 255, 0.14)';
-    ctx.strokeStyle = 'rgba(255,255,255,0.36)';
-    ctx.lineWidth = 1.4;
-    continentShapes.forEach(shape => {
-      if (!shape.points || shape.points.length < 3) return;
-      ctx.beginPath();
-      shape.points.forEach((point, index) => {
-        const p = latLonToCanvas(point.lat, point.lon);
-        if (index === 0) ctx.moveTo(p.x, p.y);
-        else ctx.lineTo(p.x, p.y);
-      });
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-    });
-    ctx.restore();
-
-    ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-    ctx.lineWidth = 0.8;
-    for (let lon = -180; lon <= 180; lon += 30) {
-      ctx.beginPath();
-      const p1 = latLonToCanvas(90, lon);
-      const p2 = latLonToCanvas(-90, lon);
-      ctx.moveTo(p1.x, p1.y);
-      ctx.lineTo(p2.x, p2.y);
-      ctx.stroke();
-    }
-    for (let lat = -60; lat <= 60; lat += 30) {
-      ctx.beginPath();
-      const p1 = latLonToCanvas(lat, -180);
-      const p2 = latLonToCanvas(lat, 180);
-      ctx.moveTo(p1.x, p1.y);
-      ctx.lineTo(p2.x, p2.y);
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  function computePins() {
-    return clients.map(c => ({
-      ...c,
-      proj: latLonToCanvas(c.lat, c.lon),
-      visible: true
-    }));
-  }
-
-  function drawPinsAndArcs() {
-    const pinSet = computePins();
-
-    ctx.save();
-    ctx.strokeStyle = 'rgba(0, 240, 255, 0.23)';
-    ctx.lineWidth = 1.3;
-    for (let i = 0; i < pinSet.length - 1; i++) {
-      const a = pinSet[i];
-      const b = pinSet[i + 1];
-      ctx.beginPath();
-      ctx.moveTo(a.proj.x, a.proj.y);
-      ctx.lineTo(b.proj.x, b.proj.y);
-      ctx.stroke();
-    }
-    ctx.restore();
-
-    pinSet.forEach(p => {
-      ctx.beginPath();
-      ctx.fillStyle = p.color + '33';
-      ctx.shadowColor = p.color;
-      ctx.shadowBlur = 14;
-      ctx.arc(p.proj.x, p.proj.y, 6, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      ctx.beginPath();
+    // Label on hover
+    if (isHovered && labelText) {
+      ctx.save();
+      ctx.font = 'bold 11px "Space Grotesk", sans-serif';
       ctx.fillStyle = '#ffffff';
-      ctx.arc(p.proj.x, p.proj.y, 3, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.textAlign = 'center';
+      
+      const txtWidth = ctx.measureText(labelText).width;
+      ctx.fillStyle = 'rgba(5, 5, 5, 0.85)';
+      ctx.fillRect(x - txtWidth/2 - 6, y - 36, txtWidth + 12, 16);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 0.8;
+      ctx.strokeRect(x - txtWidth/2 - 6, y - 36, txtWidth + 12, 16);
 
-      ctx.beginPath();
-      ctx.strokeStyle = p.color;
-      ctx.lineWidth = 1.2;
-      ctx.arc(p.proj.x, p.proj.y, 9, 0, Math.PI * 2);
-      ctx.stroke();
-    });
-
-    return pinSet;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(labelText, x, y - 24);
+      ctx.restore();
+    }
   }
 
-  let lastPinSet = [];
-  canvas.addEventListener('click', (ev) => {
-    const rect = canvas.getBoundingClientRect();
-    const mx = ev.clientX - rect.left;
-    const my = ev.clientY - rect.top;
-    let nearest = null;
-    let nd = 9999;
-    lastPinSet.forEach(p => {
-      const dx = mx - p.proj.x;
-      const dy = my - p.proj.y;
-      const dist = Math.hypot(dx, dy);
-      if (dist < nd && dist < 22) { nd = dist; nearest = p; }
-    });
-    if (nearest) {
-      showPopupFor(nearest);
-    } else {
-      hidePopup();
-    }
-  });
-
-  function showPopupFor(p) {
+  function renderPopup(p) {
     if (!popup) return;
-    popup.innerHTML = `<button class="close-btn">✕</button><div class="title">${p.title}</div><div class="desc">${p.desc}</div>`;
+    const clientHeading = p.project ? `${p.client} - ${p.project}` : p.client;
+    
+    // Construct bullet points
+    let bulletListHtml = '';
+    p.experience.forEach(bullet => {
+      bulletListHtml += `<li>${bullet}</li>`;
+    });
+
+    popup.innerHTML = `<button class="close-btn">✕</button>
+      <div class="title">${clientHeading} - ${p.location}</div>
+      <div class="desc"><ul>${bulletListHtml}</ul></div>`;
     popup.classList.remove('hidden');
+    positionPopup(p);
+  }
+
+  function positionPopup(p) {
+    if (!popup || !p) return;
+    const proj = projection([p.lon, p.lat]);
+    if (!proj) return;
+
+    const pCenter = projection.invert([width / 2, height / 2]);
+    const isVisible = d3.geoDistance(pCenter, [p.lon, p.lat]) < Math.PI / 2;
+
+    if (!isVisible) {
+      popup.classList.add('hidden');
+      return;
+    }
 
     const containerRect = canvas.getBoundingClientRect();
-    let left = p.proj.x;
-    let top = p.proj.y;
+    let left = proj[0];
+    let top = proj[1] - 22; // Offset above pin
+
     popup.style.left = `${left}px`;
     popup.style.top = `${top}px`;
 
+    // Account for boundary collision
     const popupRect = popup.getBoundingClientRect();
     const edgePadding = 16;
     if (popupRect.left < containerRect.left + edgePadding) {
       popup.style.left = `${left + (containerRect.left + edgePadding - popupRect.left)}px`;
-      popup.style.transform = 'translate(0, -120%)';
+      popup.style.transform = 'translate(0, -100%)';
     } else if (popupRect.right > containerRect.right - edgePadding) {
       popup.style.left = `${left - (popupRect.right - containerRect.right + edgePadding)}px`;
-      popup.style.transform = 'translate(0, -120%)';
+      popup.style.transform = 'translate(0, -100%)';
     } else {
-      popup.style.transform = 'translate(-50%, -120%)';
+      popup.style.transform = 'translate(-50%, -100%)';
     }
-
-    if (popupRect.top < containerRect.top + edgePadding) {
-      popup.style.top = `${top + edgePadding}px`;
-      popup.style.transform = 'translate(-50%, 0)';
-    }
-
-    const btn = popup.querySelector('.close-btn');
-    if (btn) btn.onclick = () => { hidePopup(); };
   }
 
   function hidePopup() {
     if (!popup) return;
     popup.classList.add('hidden');
+    activePin = null;
   }
 
+  // Draw globe frame
+  function draw() {
+    ctx.clearRect(0, 0, width, height);
+
+    // 1. Draw Space background & Radial Glow
+    ctx.save();
+    const radial = ctx.createRadialGradient(width / 2, height / 2, 5, width / 2, height / 2, projection.scale() * 1.5);
+    radial.addColorStop(0, 'rgba(5, 15, 35, 0.45)');
+    radial.addColorStop(0.6, 'rgba(3, 8, 20, 0.2)');
+    radial.addColorStop(1, 'rgba(5, 5, 5, 0)');
+    ctx.fillStyle = radial;
+    ctx.beginPath();
+    ctx.arc(width / 2, height / 2, projection.scale() * 1.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // 2. Draw Sphere base
+    ctx.beginPath();
+    pathGenerator({ type: "Sphere" });
+    ctx.fillStyle = "rgba(4, 10, 24, 0.75)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(0, 240, 255, 0.25)";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // 3. Draw Graticule lines
+    ctx.beginPath();
+    pathGenerator(graticule());
+    ctx.strokeStyle = "rgba(189, 0, 255, 0.08)";
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+
+    // 4. Draw Countries outlines
+    if (globeLoaded && countries) {
+      ctx.beginPath();
+      pathGenerator(countries);
+      ctx.fillStyle = "rgba(0, 114, 255, 0.04)";
+      ctx.fill();
+
+      // Glowing stroke for outlines
+      ctx.save();
+      ctx.strokeStyle = "rgba(0, 240, 255, 0.4)";
+      ctx.shadowColor = "#00f0ff";
+      ctx.shadowBlur = 4;
+      ctx.lineWidth = 0.9;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 5. Draw Flight arcs connecting points (Double-pass glowing neon line)
+    ctx.save();
+    pathSegments.forEach(seg => {
+      // Glow pass (solid, wide, translucent)
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.12)';
+      ctx.lineWidth = 4.0;
+      ctx.beginPath();
+      pathGenerator(seg.lineString);
+      ctx.stroke();
+
+      // Core pass (dashed, sharp, bright neon cyan)
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.85)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      pathGenerator(seg.lineString);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
+    ctx.restore();
+
+    // 6. Draw Aircraft flying along flight arc path
+    const elapsed = Date.now() % totalTravelTime;
+    const progress = elapsed / totalTravelTime;
+    const targetDist = progress * totalDistance;
+    let distAccum = 0;
+    let activeSeg = null;
+    let segProgress = 0;
+
+    for (const seg of pathSegments) {
+      if (seg.dist > 0) {
+        if (distAccum + seg.dist >= targetDist) {
+          activeSeg = seg;
+          segProgress = (targetDist - distAccum) / seg.dist;
+          break;
+        }
+        distAccum += seg.dist;
+      }
+    }
+    if (!activeSeg && pathSegments.length > 0) {
+      activeSeg = pathSegments[pathSegments.length - 1];
+      segProgress = 1.0;
+    }
+
+    if (activeSeg) {
+      const pulseLoc = activeSeg.interpolator(segProgress);
+      const projPulse = projection(pulseLoc);
+      if (projPulse) {
+        const pCenter = projection.invert([width / 2, height / 2]);
+        const isPulseVisible = d3.geoDistance(pCenter, pulseLoc) < Math.PI / 2;
+        if (isPulseVisible) {
+          // Calculate heading using a small delta step in progress
+          const nextProgress = Math.min(1.0, segProgress + 0.005);
+          const nextLoc = activeSeg.interpolator(nextProgress);
+          const projNext = projection(nextLoc);
+          
+          let angle = 0;
+          if (projNext) {
+            angle = Math.atan2(projNext[1] - projPulse[1], projNext[0] - projPulse[0]);
+          }
+
+          ctx.save();
+          ctx.translate(projPulse[0], projPulse[1]);
+          ctx.rotate(angle);
+
+          // Draw stylized vector aircraft pointing to the right (angle 0)
+          ctx.beginPath();
+          ctx.moveTo(8, 0);       // Nose
+          ctx.lineTo(-4, -5);     // Left wingtip
+          ctx.lineTo(-2, -1.5);   // Left wing back
+          ctx.lineTo(-6, -1.5);   // Left tail stabilizer
+          ctx.lineTo(-6, 1.5);    // Right tail stabilizer
+          ctx.lineTo(-2, 1.5);    // Right wing back
+          ctx.lineTo(-4, 5);      // Right wingtip
+          ctx.closePath();
+
+          // Aircraft body fill with neon glow
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#00f0ff';
+          ctx.shadowBlur = 10;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          // Exhaust flame/trail (hot pink neon)
+          ctx.beginPath();
+          ctx.moveTo(-6, 0);
+          ctx.lineTo(-12, 0);
+          ctx.strokeStyle = 'rgba(255, 110, 199, 0.85)';
+          ctx.lineWidth = 2.0;
+          ctx.stroke();
+
+          ctx.restore();
+        }
+      }
+    }
+
+    // 7. Draw physical pins
+    const pCenter = projection.invert([width / 2, height / 2]);
+    clients.forEach(p => {
+      const isVisible = d3.geoDistance(pCenter, [p.lon, p.lat]) < Math.PI / 2;
+      if (isVisible) {
+        const proj = projection([p.lon, p.lat]);
+        if (proj) {
+          const isHovered = (hoveredPin && hoveredPin.id === p.id);
+          const label = p.client;
+          drawPin(proj[0], proj[1], p.color, isHovered, label);
+        }
+      }
+    });
+
+    // 8. Update floating popup position dynamically
+    if (activePin) {
+      positionPopup(activePin);
+    }
+  }
+
+  // Interaction handlers
+  canvas.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    previousMousePosition = { x: e.clientX, y: e.clientY };
+    rotationInterpolator = null; // Interrupt animation
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    // Check hover state when not dragging
+    if (!isDragging) {
+      let foundHover = null;
+      const pCenter = projection.invert([width / 2, height / 2]);
+      
+      clients.forEach(p => {
+        const isVisible = d3.geoDistance(pCenter, [p.lon, p.lat]) < Math.PI / 2;
+        if (isVisible) {
+          const proj = projection([p.lon, p.lat]);
+          if (proj) {
+            // Check closeness to pin head (proj[1]-16) or pin base (proj[1])
+            const dx = mx - proj[0];
+            const dy = my - (proj[1] - 16);
+            if (Math.hypot(dx, dy) < 10) {
+              foundHover = p;
+            }
+          }
+        }
+      });
+
+      hoveredPin = foundHover;
+      canvas.style.cursor = hoveredPin ? 'pointer' : 'default';
+    } else {
+      // Rotate globe on drag
+      const dx = e.clientX - previousMousePosition.x;
+      const dy = e.clientY - previousMousePosition.y;
+
+      rotation[0] += dx * 0.22;
+      rotation[1] -= dy * 0.22;
+      rotation[1] = Math.max(-55, Math.min(55, rotation[1])); // Limit tilt
+
+      projection.rotate(rotation);
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+    }
+  });
+
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+
+  canvas.addEventListener('click', (e) => {
+    if (hoveredPin) {
+      activePin = hoveredPin;
+      renderPopup(activePin);
+      startCenterAnimation(activePin.lon, activePin.lat);
+    } else {
+      // Close popup if user clicks empty globe space (not dragging)
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      // Ensure it wasn't a drag release
+      if (Math.hypot(e.clientX - previousMousePosition.x, e.clientY - previousMousePosition.y) < 3) {
+        hidePopup();
+      }
+    }
+  });
+
+  // Popup close button listener delegation
+  popup.addEventListener('click', (e) => {
+    if (e.target.classList.contains('close-btn')) {
+      hidePopup();
+    }
+  });
+
+  // Main animation frame loop
+  let lastTime = Date.now();
   function animate() {
-    drawWorldMap();
-    lastPinSet = drawPinsAndArcs();
+    const now = Date.now();
+    const dt = now - lastTime;
+    lastTime = now;
+
+    // Smooth transition centering animation
+    if (rotationInterpolator) {
+      transitionProgress += 1.8 / transitionDuration;
+      if (transitionProgress >= 1) {
+        projection.rotate(rotationInterpolator(1));
+        rotation = projection.rotate();
+        rotationInterpolator = null;
+      } else {
+        projection.rotate(rotationInterpolator(transitionProgress));
+        rotation = projection.rotate();
+      }
+    } else if (!isDragging && !activePin) {
+      // Slow auto rotation when idle
+      rotation[0] += 0.008 * dt;
+      projection.rotate(rotation);
+    }
+
+    draw();
     requestAnimationFrame(animate);
   }
 
@@ -371,7 +742,8 @@ function updateDiagnostics() {
 window.addEventListener('error', (e) => {
   const errEl = document.getElementById('debug-last-error');
   if (errEl) {
-    errEl.textContent = `${e.message} (${e.filename.split('/').pop()}:${e.lineno})`;
+    const file = e.filename ? e.filename.split('/').pop() : 'unknown';
+    errEl.textContent = `${e.message} (${file}:${e.lineno || 0})`;
     errEl.classList.remove('text-green-400');
     errEl.classList.add('text-red-400');
   }

@@ -31,7 +31,8 @@
       errorDiv.style.fontFamily = 'monospace';
       errorDiv.style.fontSize = '12px';
       errorDiv.style.borderBottom = '2px solid #b91c1c';
-      errorDiv.innerHTML = '<strong>[JS Diagnostics Error]:</strong> ' + e.message + ' at line ' + e.lineno + ' in ' + e.filename.split('/').pop();
+      const file = e.filename ? e.filename.split('/').pop() : 'unknown';
+      errorDiv.innerHTML = '<strong>[JS Diagnostics Error]:</strong> ' + e.message + ' at line ' + (e.lineno || 0) + ' in ' + file;
       document.body.appendChild(errorDiv);
     });
   </script>
@@ -317,6 +318,18 @@
             <div id="client-map" class="w-full h-[420px] md:h-[360px] relative">
               <canvas id="globe-canvas" class="w-full h-full rounded-lg" width="900" height="480"></canvas>
               <div id="map-popup" class="map-popup hidden"></div>
+              <!-- Vertical Zoom Slider Control Panel -->
+              <div class="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center space-y-3 z-20 pointer-events-auto bg-black/55 backdrop-blur-md px-2.5 py-4 rounded-xl border border-white/10 shadow-2xl">
+                <button id="btn-zoom-in" class="text-neoncyan hover:text-white transition-colors cursor-pointer focus:outline-none" title="Zoom In">
+                  <i class="fa-solid fa-plus text-xs"></i>
+                </button>
+                <div class="h-24 flex items-center justify-center">
+                  <input type="range" id="globe-zoom" min="0.6" max="3.0" step="0.05" value="1.0" class="vertical-slider cursor-pointer accent-neoncyan" title="Globe Zoom">
+                </div>
+                <button id="btn-zoom-out" class="text-neoncyan hover:text-white transition-colors cursor-pointer focus:outline-none" title="Zoom Out">
+                  <i class="fa-solid fa-minus text-xs"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -476,6 +489,10 @@
 
   <!-- Load Matter.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+  
+  <!-- Load D3.js and TopoJSON for 3D Globe -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://unpkg.com/topojson-client@3"></script>
   
   <!-- Custom Logic -->
   <script src="script.js"></script>
