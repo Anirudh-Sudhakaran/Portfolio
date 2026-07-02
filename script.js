@@ -103,7 +103,7 @@ function initGlobe() {
       lon: 78.37791119185727,
       color: '#39ff14', // neongreen
       experience: [
-        'Managed application support, defect resolution, and incident handling, improving application stability by <strong class="glow-text-green-sm">20%+</strong> through proactive monitoring and rapid issue remediation.',
+        'Managed application support, defect resolution, and incident handling, improving application stability by <strong class="glow-text-green-sm">20%</strong> through <strong class="glow-text-green-sm">proactive monitoring and rapid issue remediation.</strong>',
         'Developed and maintained key application modules and change requests, enabling continuous platform enhancements while ensuring <strong class="glow-text-green-sm">high-quality code delivery</strong>.',
         'Monitored server health and application performance, providing actionable insights through daily reporting and technical reviews that improved <strong class="glow-text-green-sm">service reliability and stakeholder visibility</strong>.'
       ]
@@ -115,11 +115,11 @@ function initGlobe() {
       location: 'Woodland Hills, California - USA',
       lat: 34.186174859481184,
       lon: -118.60200405338564,
-      color: '#39ff14', // neongreen
+      color: '#dc14ff', // neonpurple
       experience: [
-        'Developed and enhanced business-critical application components, delivering change requests with <strong class="glow-text-green-sm">100% adherence</strong> to functional requirements and improving overall system usability.',
-        'Partnered with client and onsite stakeholders to translate business requirements into scalable technical solutions, enabling <strong class="glow-text-green-sm">faster delivery cycles</strong> and improved customer satisfaction.',
-        'Implemented business logic and application enhancements, contributing to <strong class="glow-text-green-sm">greater process efficiency</strong> and reducing manual intervention across key workflows.'
+        '<strong class="glow-text-purple-sm">Developed and enhanced business-critical application</strong> components, delivering change requests with <strong class="glow-text-purple-sm">100% adherence</strong> to functional requirements and improving overall system usability.',
+        'Partnered with client and onsite stakeholders to translate business requirements into scalable technical solutions, enabling <strong class="glow-text-purple-sm">faster delivery cycles</strong> and <strong class="glow-text-purple-sm">improved customer satisfaction.</strong>',
+        '<strong class="glow-text-purple-sm">Implemented business logic and application enhancements</strong>, contributing to <strong class="glow-text-purple-sm">greater process efficiency</strong> and reducing manual intervention across key workflows.'
       ]
     },
     {
@@ -127,13 +127,13 @@ function initGlobe() {
       client: 'AT&T',
       project: 'Common Services Integration',
       location: 'Hyderabad, Telangana - India',
-      lat: 17.3850,
+      lat: 17.2850,
       lon: 78.4867,
       color: '#0072ff', // neonblue
       experience: [
-        'Provided production support for mission-critical middleware applications, achieving <strong class="glow-text-blue-sm">99.9% service availability</strong> through proactive monitoring, incident management, and SLA adherence.',
-        'Performed root cause analysis, patch deployments, DR synchronization, and migration activities, reducing recurring production incidents by <strong class="glow-text-blue-sm">25%+</strong> and strengthening platform stability.',
-        'Collaborated with development, testing, and vendor teams to resolve complex issues, optimize JVM performance, and ensure successful delivery of releases within <strong class="glow-text-blue-sm">defined change windows</strong>.'
+        '<strong class="glow-text-blue-sm">Provided production support for mission-critical middleware applications</strong>, achieving <strong class="glow-text-blue-sm">99.9% service availability</strong> through <strong class="glow-text-blue-sm">proactive monitoring, incident management, and SLA adherence.</strong>',
+        'Performed <strong class="glow-text-blue-sm">root cause analysis, patch deployments, DR synchronization, and migration activities</strong>, reducing recurring production incidents by <strong class="glow-text-blue-sm">25%</strong> and strengthening platform stability.',
+        'Collaborated with development, testing, and vendor teams to <strong class="glow-text-blue-sm">resolve complex issues, optimize JVM performance, and ensure successful delivery</strong> of releases within defined change windows.'
       ]
     },
     {
@@ -145,9 +145,9 @@ function initGlobe() {
       lon: -85.15554002085922,
       color: '#ff6ec7', // neonpink
       experience: [
-        'Led pricing and product configuration across 200+ On-Bill and Off-Bill partners, improving pricing accuracy by <strong class="glow-text-pink-sm">~37%</strong> and reducing configuration turnaround times by <strong class="glow-text-pink-sm">21%</strong> through process optimization and automation.',
-        'Streamlined price increase and revenue-cycle workflows, collaborating with business stakeholders to enhance operational efficiency while ensuring <strong class="glow-text-pink-sm">seamless integration</strong> across Ensura and partner platforms.',
-        'Drove UAT, application support, and synchronization testing, contributing to <strong class="glow-text-pink-sm">99% configuration quality</strong>, faster issue resolution, and improved stakeholder confidence.'
+        '<strong class="glow-text-pink-sm">Led pricing and product configuration</strong> across 200+ On-Bill and Off-Bill partners, improving pricing accuracy by <strong class="glow-text-pink-sm">~37%</strong> and reducing configuration turnaround times by <strong class="glow-text-pink-sm">21%</strong> through process optimization and automation.',
+        'Streamlined <strong class="glow-text-pink-sm">price increase and revenue-cycle workflows</strong>, collaborating with business stakeholders to enhance operational efficiency while ensuring <strong class="glow-text-pink-sm">seamless integration</strong> across Ensura and partner platforms.',
+        'Drove <strong class="glow-text-pink-sm">UAT, application support, and synchronization testing</strong>, contributing to <strong class="glow-text-pink-sm">99% configuration quality</strong>, faster issue resolution, and improved stakeholder confidence.'
       ]
     },
     {
@@ -159,8 +159,8 @@ function initGlobe() {
       lon: 80.22022417843846,
       color: '#00f0ff', // neoncyan
       experience: [
-        'Led client onboarding and platform configuration activities, successfully configuring media, letters, statements, and notices for multiple clients, reducing deployment effort by <strong class="glow-text-cyan-sm">30%</strong> through standardized implementation practices.',
-        'Managed end-to-end validation, testing, and migration processes across QA and Development environments, achieving <strong class="glow-text-cyan-sm">99%+ configuration accuracy</strong> and minimizing production defects.',
+        '<strong class="glow-text-cyan-sm">Led client onboarding and platform configuration activities</strong>, successfully configuring media, letters, statements, and notices for multiple clients, reducing deployment effort by <strong class="glow-text-cyan-sm">30%</strong> through standardized implementation practices.',
+        'Managed <strong class="glow-text-cyan-sm">end-to-end validation, testing, and migration processes</strong> across QA and Development environments, achieving <strong class="glow-text-cyan-sm">99%+ configuration accuracy</strong> and minimizing production defects.',
         'Collaborated closely with onshore teams during sprint and release cycles, accelerating wave-release readiness by <strong class="glow-text-cyan-sm">20%</strong> and ensuring seamless delivery of client-specific requirements through rigorous UAT.'
       ]
     },
@@ -169,11 +169,11 @@ function initGlobe() {
       client: 'Fiserv',
       project: '8 Digit BIN conversion',
       location: 'Chennai, Tamil Nadu - India',
-      lat: 13.0827,
+      lat: 13.9827,
       lon: 80.2707,
       color: '#ff2d2d', // neonred
       experience: [
-        'Delivered end-to-end implementation projects for enterprise clients, consistently achieving <strong class="glow-text-cyan-sm">100% adherence</strong> to project timelines and budget commitments while ensuring smooth stakeholder alignment.',
+        '<strong class="glow-text-cyan-sm">Delivered end-to-end implementation projects</strong> for enterprise clients, consistently achieving <strong class="glow-text-cyan-sm">100% adherence</strong> to project timelines and budget commitments while ensuring smooth stakeholder alignment.',
         'Conducted in-depth business and data analysis, providing <strong class="glow-text-cyan-sm">actionable insights</strong> that improved decision-making efficiency and enhanced implementation outcomes.',
         'Drove process and organizational optimization initiatives, contributing to improved operational effectiveness, <strong class="glow-text-cyan-sm">faster adoption rates</strong>, and measurable business value realization for clients.'
       ]
@@ -241,6 +241,7 @@ function initGlobe() {
     }
     const sphereRadius = Math.min(width, height) * 0.42 * zoomScale;
     projection.scale(sphereRadius).translate([width / 2, height / 2]);
+    projection.rotate(rotation); // Maintain rotation state after zoom
     if (activePin) {
       positionPopup(activePin);
     }
@@ -516,7 +517,7 @@ function initGlobe() {
 
       // Core pass (dashed, sharp, bright neon cyan)
       ctx.strokeStyle = 'rgba(0, 240, 255, 0.85)';
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 2.5;
       ctx.setLineDash([6, 4]);
       ctx.beginPath();
       pathGenerator(seg.lineString);
@@ -592,7 +593,7 @@ function initGlobe() {
           ctx.moveTo(-6, 0);
           ctx.lineTo(-12, 0);
           ctx.strokeStyle = 'rgba(255, 110, 199, 0.85)';
-          ctx.lineWidth = 2.0;
+          ctx.lineWidth = 2.5;
           ctx.stroke();
 
           ctx.restore();
