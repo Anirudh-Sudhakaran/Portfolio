@@ -98,9 +98,9 @@ function initGlobe() {
       id: 'farmers_eagent',
       client: 'Farmers Insurance',
       project: 'eAgent Dashboard',
-      location: 'Hyderabad, Telangana India',
-      lat: 17.3850,
-      lon: 78.4867,
+      location: 'Hyderabad, Telangana - India',
+      lat: 17.44110700511055, 
+      lon: 78.37791119185727,
       color: '#39ff14', // neongreen
       experience: [
         'Managed application support, defect resolution, and incident handling, improving application stability by <strong class="glow-text-green-sm">20%+</strong> through proactive monitoring and rapid issue remediation.',
@@ -112,9 +112,9 @@ function initGlobe() {
       id: 'farmers_dashboard',
       client: 'Farmers Insurance',
       project: 'eFolio Dashboard',
-      location: 'Woodland Hills, California USA',
-      lat: 34.1683,
-      lon: -118.6058,
+      location: 'Woodland Hills, California - USA',
+      lat: 34.186174859481184,
+      lon: -118.60200405338564,
       color: '#39ff14', // neongreen
       experience: [
         'Developed and enhanced business-critical application components, delivering change requests with <strong class="glow-text-green-sm">100% adherence</strong> to functional requirements and improving overall system usability.',
@@ -126,7 +126,7 @@ function initGlobe() {
       id: 'att',
       client: 'AT&T',
       project: 'Common Services Integration',
-      location: 'Hyderabad, Telangana India',
+      location: 'Hyderabad, Telangana - India',
       lat: 17.3850,
       lon: 78.4867,
       color: '#0072ff', // neonblue
@@ -140,9 +140,9 @@ function initGlobe() {
       id: 'homeserve',
       client: 'HomeServe PLC',
       project: 'HS Ensura',
-      location: 'Chattanooga, Tennessee USA',
-      lat: 35.0456,
-      lon: -85.3097,
+      location: 'Chattanooga, Tennessee - USA',
+      lat: 35.04841967028044,
+      lon: -85.15554002085922,
       color: '#ff6ec7', // neonpink
       experience: [
         'Led pricing and product configuration across 200+ On-Bill and Off-Bill partners, improving pricing accuracy by <strong class="glow-text-pink-sm">~37%</strong> and reducing configuration turnaround times by <strong class="glow-text-pink-sm">21%</strong> through process optimization and automation.',
@@ -153,10 +153,10 @@ function initGlobe() {
     {
       id: 'fiserv_kent',
       client: 'Fiserv',
-      project: 'KENT',
-      location: 'Chennai, Tamil Nadu India',
-      lat: 13.0827,
-      lon: 80.2707,
+      project: 'KENT Letters & Statements',
+      location: 'Chennai, Tamil Nadu - India',
+      lat: 12.91347988330609,
+      lon: 80.22022417843846,
       color: '#00f0ff', // neoncyan
       experience: [
         'Led client onboarding and platform configuration activities, successfully configuring media, letters, statements, and notices for multiple clients, reducing deployment effort by <strong class="glow-text-cyan-sm">30%</strong> through standardized implementation practices.',
@@ -168,10 +168,10 @@ function initGlobe() {
       id: 'fiserv_bin',
       client: 'Fiserv',
       project: '8 Digit BIN conversion',
-      location: 'Chennai, Tamil Nadu India',
+      location: 'Chennai, Tamil Nadu - India',
       lat: 13.0827,
       lon: 80.2707,
-      color: '#00f0ff', // neoncyan
+      color: '#ff2d2d', // neonred
       experience: [
         'Delivered end-to-end implementation projects for enterprise clients, consistently achieving <strong class="glow-text-cyan-sm">100% adherence</strong> to project timelines and budget commitments while ensuring smooth stakeholder alignment.',
         'Conducted in-depth business and data analysis, providing <strong class="glow-text-cyan-sm">actionable insights</strong> that improved decision-making efficiency and enhanced implementation outcomes.',
@@ -181,14 +181,15 @@ function initGlobe() {
     {
       id: 'cityguilds',
       client: 'City & Guilds',
-      project: '',
-      location: 'Wakefield, West Yorkshire UK',
-      lat: 53.6808,
-      lon: -1.4977,
+      project: 'Awarding Organisation - Centre Operations',
+      location: 'Wakefield, West Yorkshire - UK',
+      lat: 53.70011165280542, 
+      lon: -1.5078706398613282,
       color: '#bd00ff', // neonpurple
       experience: [
-        'Excelled in City & Guilds to implement process improvements and automation solutions, leading to a <strong class="glow-text-purple-sm">35% increase</strong> in operational efficiency.',
-        'Enhanced reporting capabilities and improved <strong class="glow-text-purple-sm">data visibility</strong> for better decision-making across teams.'
+        '<strong class="glow-text-purple-sm">Led and developed a high-performing operations team</strong>, balancing priorities across multiple workstreams while improving service delivery efficiency by <strong class="glow-text-purple-sm">30%</strong> through effective workload management, coaching, and capability development.',
+        '<strong class="glow-text-purple-sm">Drove business transformation and operational improvement initiatives</strong>, leading discovery workshops, stakeholder engagement, and early-stage analysis across five strategic programmes, ensuring alignment between business goals and technology solutions.',
+        '<strong class="glow-text-purple-sm">Designed end-to-end process models, governance frameworks, and Power BI reporting solutions</strong>, delivering <strong class="glow-text-purple-sm">95%</strong> reduction in process inefficiencies, <strong class="glow-text-purple-sm">30%</strong> increase in solution adoption, and enhanced KPI visibility for data-driven decision-making.'
       ]
     }
   ];
@@ -254,7 +255,7 @@ function initGlobe() {
 
   if (btnZoomIn) {
     btnZoomIn.addEventListener('click', () => {
-      zoomScale = Math.min(3.0, zoomScale + 0.15);
+      zoomScale = Math.min(6.0, zoomScale + 0.15);
       updateZoom();
     });
   }
@@ -298,20 +299,20 @@ function initGlobe() {
     transitionProgress = 0;
   }
 
-  // Pre-calculate flight path segments
+  // Pre-calculate flight path segments in the requested sequence and loop back to start
   const pathSegments = [];
-  for (let i = 0; i < clients.length - 1; i++) {
+  for (let i = 0; i < clients.length; i++) {
     const p1 = clients[i];
-    const p2 = clients[i + 1];
+    const p2 = clients[(i + 1) % clients.length];
     const dist = d3.geoDistance([p1.lon, p1.lat], [p2.lon, p2.lat]);
     const interpolator = d3.geoInterpolate([p1.lon, p1.lat], [p2.lon, p2.lat]);
-    
+
     const points = [];
     const steps = Math.max(15, Math.round(dist * 35));
     for (let s = 0; s <= steps; s++) {
       points.push(interpolator(s / steps));
     }
-    
+
     pathSegments.push({
       from: p1,
       to: p2,
@@ -327,7 +328,7 @@ function initGlobe() {
   const totalTravelTime = 10000; // 10 seconds total journey loop
 
   // Draw stem and glowing pin head
-  function drawPin(x, y, color, isHovered, labelText) {
+  function drawPin(x, y, color, isHovered, labelText, pinNumber) {
     // Stem
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -358,13 +359,32 @@ function initGlobe() {
     ctx.lineWidth = 1.2;
     ctx.stroke();
 
+    // Visible pin number badge
+    if (pinNumber !== undefined) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y - 30, 8.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(5, 5, 5, 0.95)';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.1;
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.font = 'bold 9px "Space Grotesk", sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(pinNumber), x, y - 30);
+      ctx.restore();
+    }
+
     // Label on hover
     if (isHovered && labelText) {
       ctx.save();
       ctx.font = 'bold 11px "Space Grotesk", sans-serif';
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
-      
+
       const txtWidth = ctx.measureText(labelText).width;
       ctx.fillStyle = 'rgba(5, 5, 5, 0.85)';
       ctx.fillRect(x - txtWidth/2 - 6, y - 36, txtWidth + 12, 16);
@@ -582,14 +602,14 @@ function initGlobe() {
 
     // 7. Draw physical pins
     const pCenter = projection.invert([width / 2, height / 2]);
-    clients.forEach(p => {
+    clients.forEach((p, index) => {
       const isVisible = d3.geoDistance(pCenter, [p.lon, p.lat]) < Math.PI / 2;
       if (isVisible) {
         const proj = projection([p.lon, p.lat]);
         if (proj) {
           const isHovered = (hoveredPin && hoveredPin.id === p.id);
           const label = p.client;
-          drawPin(proj[0], proj[1], p.color, isHovered, label);
+          drawPin(proj[0], proj[1], p.color, isHovered, label, index + 1);
         }
       }
     });
