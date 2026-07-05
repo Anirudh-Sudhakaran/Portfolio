@@ -127,8 +127,8 @@ function initGlobe() {
       client: 'AT&T',
       project: 'Common Services Integration',
       location: 'Hyderabad, Telangana - India',
-      lat: 13.064487167965432,
-      lon: 77.51749558158743,
+      lat: 17.2850,
+      lon: 78.4867,
       color: '#0072ff', // neonblue
       experience: [
         '<strong class="glow-text-blue-sm">Provided production support for mission-critical middleware applications</strong>, achieving <strong class="glow-text-blue-sm">99.9% service availability</strong> through <strong class="glow-text-blue-sm">proactive monitoring, incident management, and SLA adherence.</strong>',
@@ -169,8 +169,8 @@ function initGlobe() {
       client: 'Fiserv',
       project: '8 Digit BIN conversion',
       location: 'Chennai, Tamil Nadu - India',
-      lat: 10.79447187962901,
-      lon: 76.63691598344852,
+      lat: 13.9827,
+      lon: 80.2707,
       color: '#ff2d2d', // neonred
       experience: [
         '<strong class="glow-text-cyan-sm">Delivered end-to-end implementation projects</strong> for enterprise clients, consistently achieving <strong class="glow-text-cyan-sm">100% adherence</strong> to project timelines and budget commitments while ensuring smooth stakeholder alignment.',
@@ -1047,6 +1047,7 @@ window.addEventListener('load', () => {
   initMagneticButtons();
   initScrollReveal();
   initGlobe();
+  initSuccessStories();
 });
 
 // Re-init on window resizing (with debounce)
@@ -1177,5 +1178,47 @@ function initScrollReveal() {
   const revealElements = document.querySelectorAll('.reveal');
   revealElements.forEach(el => {
     revealObserver.observe(el);
+  });
+}
+
+/* --- Success Stories Tab Control --- */
+function initSuccessStories() {
+  const tabButtons = document.querySelectorAll('.success-tab-btn');
+  const panels = document.querySelectorAll('.success-panel');
+  
+  if (tabButtons.length === 0) return;
+  
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const targetTab = button.getAttribute('data-tab');
+      
+      // Update buttons state
+      tabButtons.forEach(btn => {
+        btn.className = "success-tab-btn flex items-center space-x-2 px-5 py-2.5 rounded-xl border border-white/5 bg-white/5 text-gray-400 font-tech text-xs tracking-wider uppercase transition-all hover:bg-white/10 hover:border-white/20";
+        const icon = btn.querySelector('i');
+        if (icon) {
+          // Replace both possible icon colors with gray-400
+          icon.className = icon.className.replace('text-neonpink', 'text-gray-400');
+        }
+      });
+      
+      button.className = "success-tab-btn flex items-center space-x-2 px-5 py-2.5 rounded-xl border border-neonpink/30 bg-neonpink/10 text-white font-tech text-xs tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(255,110,199,0.1)] active";
+      const activeIcon = button.querySelector('i');
+      if (activeIcon) {
+        activeIcon.className = activeIcon.className.replace('text-gray-400', 'text-neonpink');
+      }
+      
+      // Toggle panels with class/hidden
+      panels.forEach(panel => {
+        if (panel.id === `success-panel-${targetTab}`) {
+          panel.classList.remove('hidden');
+        } else {
+          panel.classList.add('hidden');
+        }
+      });
+      
+      // Recalculate physics obstacles because layout coordinates and dimensions have changed
+      initPhysics();
+    });
   });
 }
