@@ -410,7 +410,15 @@ function initGlobe() {
     });
 
     popup.innerHTML = `<button class="close-btn">✕</button>
-      <div class="title">${clientHeading} - ${p.location}</div>
+     <div class="title flex items-center justify-between gap-2">
+        <button class="prev-pin-btn text-neoncyan hover:text-white transition-colors cursor-pointer mr-1 focus:outline-none" title="Previous Client">
+          <i class="fa-solid fa-chevron-left text-xs"></i>
+        </button>
+        <span class="flex-1 text-center">${clientHeading} - ${p.location}</span>
+        <button class="next-pin-btn text-neoncyan hover:text-white transition-colors cursor-pointer ml-1 focus:outline-none" title="Next Client">
+          <i class="fa-solid fa-chevron-right text-xs"></i>
+        </button>
+      </div>
       <div class="desc"><ul>${bulletListHtml}</ul></div>`;
     popup.classList.remove('hidden');
     positionPopup(p);
@@ -690,10 +698,27 @@ function initGlobe() {
     }
   });
 
-  // Popup close button listener delegation
+  // Popup navigation and close button listener delegation
   popup.addEventListener('click', (e) => {
-    if (e.target.classList.contains('close-btn')) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.classList.contains('close-btn')) {
       hidePopup();
+      return;
+    }
+    if (btn.classList.contains('prev-pin-btn') || btn.classList.contains('next-pin-btn')) {
+      if (!activePin) return;
+      const currentIndex = clients.findIndex(c => c.id === activePin.id);
+      if (currentIndex === -1) return;
+      let nextIndex;
+      if (btn.classList.contains('prev-pin-btn')) {
+        nextIndex = (currentIndex - 1 + clients.length) % clients.length;
+      } else {
+        nextIndex = (currentIndex + 1) % clients.length;
+      }
+      activePin = clients[nextIndex];
+      renderPopup(activePin);
+      startCenterAnimation(activePin.lon, activePin.lat);
     }
   });
 
