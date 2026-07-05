@@ -127,8 +127,8 @@ function initGlobe() {
       client: 'AT&T',
       project: 'Common Services Integration',
       location: 'Hyderabad, Telangana - India',
-      lat: 17.2850,
-      lon: 78.4867,
+      lat: 13.064660089471452, 
+      lon: 77.51749580065017,
       color: '#0072ff', // neonblue
       experience: [
         '<strong class="glow-text-blue-sm">Provided production support for mission-critical middleware applications</strong>, achieving <strong class="glow-text-blue-sm">99.9% service availability</strong> through <strong class="glow-text-blue-sm">proactive monitoring, incident management, and SLA adherence.</strong>',
@@ -169,8 +169,8 @@ function initGlobe() {
       client: 'Fiserv',
       project: '8 Digit BIN conversion',
       location: 'Chennai, Tamil Nadu - India',
-      lat: 13.9827,
-      lon: 80.2707,
+      lat: 10.794389530346175, 
+      lon: 76.6369086374932,
       color: '#ff2d2d', // neonred
       experience: [
         '<strong class="glow-text-cyan-sm">Delivered end-to-end implementation projects</strong> for enterprise clients, consistently achieving <strong class="glow-text-cyan-sm">100% adherence</strong> to project timelines and budget commitments while ensuring smooth stakeholder alignment.',
@@ -907,7 +907,7 @@ function initPhysics() {
     mouseConstraint.mouse.element.removeEventListener("wheel", mouseConstraint.mouse.mousewheel);
   }
   // Update System Diagnostics Panel
-  
+
   updateDiagnostics();
 }
 
