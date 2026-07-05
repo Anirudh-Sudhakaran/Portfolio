@@ -899,6 +899,7 @@ function initPhysics() {
     }
   });
   World.add(world, mouseConstraint);
+
     // Disable Matter.js scroll/wheel capturing so standard browser trackpad/mousewheel scroll works smoothly
   if (mouseConstraint.mouse && mouseConstraint.mouse.element) {
     mouseConstraint.mouse.element.removeEventListener("mousewheel", mouseConstraint.mouse.mousewheel);
@@ -906,6 +907,7 @@ function initPhysics() {
     mouseConstraint.mouse.element.removeEventListener("wheel", mouseConstraint.mouse.mousewheel);
   }
   // Update System Diagnostics Panel
+  
   updateDiagnostics();
 }
 
