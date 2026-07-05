@@ -435,6 +435,8 @@ function initGlobe() {
     if (!isVisible) {
       popup.classList.add('hidden');
       return;
+    }else {
+      popup.classList.remove('hidden');
     }
 
     const containerRect = canvas.getBoundingClientRect();
