@@ -499,14 +499,7 @@ header, main, footer {
   max-height: 1200px;
   border-color: rgba(57, 255, 20, 0.2); /* Subtle green tint when active */
   box-shadow: 0 10px 40px rgba(57, 255, 20, 0.05), inset 0 0 15px rgba(57, 255, 20, 0.02);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: transparent !important;
 }
-
-.skills-slot {
-  transition: border-color 0.3s ease, background-color 0.3s ease;
-}
-
-#skills-dock-container.docked .skills-slot:hover {
-  border-color: rgba(57, 255, 20, 0.4);
-  background-color: rgba(57, 255, 20, 0.02);
-}
-

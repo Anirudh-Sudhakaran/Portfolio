@@ -1308,7 +1308,7 @@ function generateSkillsSlots() {
   
   skillsData.forEach(skill => {
     const slot = document.createElement('div');
-    slot.className = 'skills-slot h-10 flex items-center justify-center rounded-xl border border-dashed border-white/10';
+    slot.className = 'skills-slot h-10 flex items-center justify-center';
     grid.appendChild(slot);
   });
 }
