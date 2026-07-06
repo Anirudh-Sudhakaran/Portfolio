@@ -1,3 +1,4 @@
+
 // Check Matter.js load
 const { Engine, World, Bodies, Mouse, MouseConstraint, Runner } = Matter;
 
@@ -48,6 +49,7 @@ let cardBodies = [];
 let skillBodies = [];
 let mouseConstraint;
 let mouse;
+let isSkillsDocked = false;
 
 // Helper to draw rounded rectangle in Canvas
 function drawRoundedRect(ctx, x, y, width, height, radius) {
@@ -127,8 +129,8 @@ function initGlobe() {
       client: 'AT&T',
       project: 'Common Services Integration',
       location: 'Hyderabad, Telangana - India',
-      lat: 13.064660089471452, 
-      lon: 77.51749580065017,
+      lat: 17.2850,
+      lon: 78.4867,
       color: '#0072ff', // neonblue
       experience: [
         '<strong class="glow-text-blue-sm">Provided production support for mission-critical middleware applications</strong>, achieving <strong class="glow-text-blue-sm">99.9% service availability</strong> through <strong class="glow-text-blue-sm">proactive monitoring, incident management, and SLA adherence.</strong>',
@@ -169,8 +171,8 @@ function initGlobe() {
       client: 'Fiserv',
       project: '8 Digit BIN conversion',
       location: 'Chennai, Tamil Nadu - India',
-      lat: 10.794389530346175, 
-      lon: 76.6369086374932,
+      lat: 13.9827,
+      lon: 80.2707,
       color: '#ff2d2d', // neonred
       experience: [
         '<strong class="glow-text-cyan-sm">Delivered end-to-end implementation projects</strong> for enterprise clients, consistently achieving <strong class="glow-text-cyan-sm">100% adherence</strong> to project timelines and budget commitments while ensuring smooth stakeholder alignment.',
@@ -410,7 +412,7 @@ function initGlobe() {
     });
 
     popup.innerHTML = `<button class="close-btn">✕</button>
-     <div class="title flex items-center justify-between gap-2">
+      <div class="title flex items-center justify-between gap-2">
         <button class="prev-pin-btn text-neoncyan hover:text-white transition-colors cursor-pointer mr-1 focus:outline-none" title="Previous Client">
           <i class="fa-solid fa-chevron-left text-xs"></i>
         </button>
@@ -435,7 +437,7 @@ function initGlobe() {
     if (!isVisible) {
       popup.classList.add('hidden');
       return;
-    }else {
+    } else {
       popup.classList.remove('hidden');
     }
 
@@ -704,20 +706,24 @@ function initGlobe() {
   popup.addEventListener('click', (e) => {
     const btn = e.target.closest('button');
     if (!btn) return;
+
     if (btn.classList.contains('close-btn')) {
       hidePopup();
       return;
     }
+
     if (btn.classList.contains('prev-pin-btn') || btn.classList.contains('next-pin-btn')) {
       if (!activePin) return;
       const currentIndex = clients.findIndex(c => c.id === activePin.id);
       if (currentIndex === -1) return;
+
       let nextIndex;
       if (btn.classList.contains('prev-pin-btn')) {
         nextIndex = (currentIndex - 1 + clients.length) % clients.length;
       } else {
         nextIndex = (currentIndex + 1) % clients.length;
       }
+
       activePin = clients[nextIndex];
       renderPopup(activePin);
       startCenterAnimation(activePin.lon, activePin.lat);
@@ -927,14 +933,14 @@ function initPhysics() {
   });
   World.add(world, mouseConstraint);
 
-    // Disable Matter.js scroll/wheel capturing so standard browser trackpad/mousewheel scroll works smoothly
+  // Disable Matter.js scroll/wheel capturing so standard browser trackpad/mousewheel scroll works smoothly
   if (mouseConstraint.mouse && mouseConstraint.mouse.element) {
     mouseConstraint.mouse.element.removeEventListener("mousewheel", mouseConstraint.mouse.mousewheel);
     mouseConstraint.mouse.element.removeEventListener("DOMMouseScroll", mouseConstraint.mouse.mousewheel);
     mouseConstraint.mouse.element.removeEventListener("wheel", mouseConstraint.mouse.mousewheel);
   }
-  // Update System Diagnostics Panel
 
+  // Update System Diagnostics Panel
   updateDiagnostics();
 }
 
@@ -1037,6 +1043,40 @@ function renderCanvas() {
 // Maintain Float Drift & Speed Limits
 Matter.Events.on(engine, 'afterUpdate', () => {
   if (!mouseConstraint) return;
+
+  // If docked, animate to slots
+  if (isSkillsDocked) {
+    const slots = document.querySelectorAll('.skills-slot');
+    skillBodies.forEach((body, index) => {
+      // Don't override position if user is actively dragging the body
+      if (mouseConstraint.body === body) {
+        body.collisionFilter.mask = 0xFFFFFFFF; // Restore collision while dragging
+        return;
+      }
+
+      body.collisionFilter.mask = 0; // Disable collision for docked bodies
+      const slot = slots[index];
+      if (slot) {
+        const rect = slot.getBoundingClientRect();
+        const targetX = rect.left + window.scrollX + rect.width / 2;
+        const targetY = rect.top + window.scrollY + rect.height / 2;
+
+        const dx = targetX - body.position.x;
+        const dy = targetY - body.position.y;
+
+        Matter.Body.setPosition(body, {
+          x: body.position.x + dx * 0.15,
+          y: body.position.y + dy * 0.15
+        });
+
+        Matter.Body.setAngle(body, body.angle * 0.85);
+        Matter.Body.setVelocity(body, { x: 0, y: 0 });
+        Matter.Body.setAngularVelocity(body, 0);
+      }
+    });
+    return;
+  }
+
   skillBodies.forEach(body => {
     // 1. Cap maximum velocity to prevent tunnel issues
     const maxSpeed = 4.5;
@@ -1077,12 +1117,14 @@ requestAnimationFrame(renderCanvas);
 
 // Init on load
 window.addEventListener('load', () => {
+  generateSkillsSlots();
   initPhysics();
   initTypewriter();
   initMagneticButtons();
   initScrollReveal();
   initGlobe();
   initSuccessStories();
+  initSkillsObserver();
 });
 
 // Re-init on window resizing (with debounce)
@@ -1256,4 +1298,136 @@ function initSuccessStories() {
       initPhysics();
     });
   });
+}
+
+/* --- Technical Skills Slots & Docking --- */
+function generateSkillsSlots() {
+  const grid = document.getElementById('skills-dock-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  
+  skillsData.forEach(skill => {
+    const slot = document.createElement('div');
+    slot.className = 'skills-slot h-10 flex items-center justify-center rounded-xl border border-dashed border-white/10';
+    grid.appendChild(slot);
+  });
+}
+
+function initSkillsObserver() {
+  const skillsSection = document.getElementById('skills');
+  if (!skillsSection) return;
+  
+  const observerOptions = {
+    root: null,
+    rootMargin: '-30% 0px -30% 0px', // Active when skills section occupies center 40% of screen
+    threshold: 0
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        dockSkills();
+      } else {
+        undockSkills();
+      }
+    });
+  }, observerOptions);
+  
+  observer.observe(skillsSection);
+}
+
+function dockSkills() {
+  if (isSkillsDocked) return;
+  isSkillsDocked = true;
+  
+  const container = document.getElementById('skills-dock-container');
+  const grid = document.getElementById('skills-dock-grid');
+  const hint = document.getElementById('skills-dock-hint');
+  
+  if (container) container.classList.add('docked');
+  if (grid) {
+    grid.style.opacity = '1';
+    grid.style.pointerEvents = 'auto';
+  }
+  if (hint) hint.style.opacity = '0';
+  
+  transitionObstacles();
+  
+  skillBodies.forEach(body => {
+    body.collisionFilter.mask = 0; // Disable collisions
+  });
+}
+
+function undockSkills() {
+  if (!isSkillsDocked) return;
+  isSkillsDocked = false;
+  
+  const container = document.getElementById('skills-dock-container');
+  const grid = document.getElementById('skills-dock-grid');
+  const hint = document.getElementById('skills-dock-hint');
+  
+  if (container) container.classList.remove('docked');
+  if (grid) {
+    grid.style.opacity = '0';
+    grid.style.pointerEvents = 'none';
+  }
+  if (hint) hint.style.opacity = '1';
+  
+  transitionObstacles();
+  
+  // Scatter bills back into space
+  skillBodies.forEach(body => {
+    body.collisionFilter.mask = 0xFFFFFFFF; // Restore collision
+    
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 2 + 1.2;
+    Matter.Body.setVelocity(body, {
+      x: Math.cos(angle) * speed,
+      y: Math.sin(angle) * speed
+    });
+  });
+}
+
+// Update Matter.js static card obstacles dynamically during height transition
+function transitionObstacles() {
+  let elapsed = 0;
+  const interval = setInterval(() => {
+    updateCardObstacles();
+    elapsed += 50;
+    if (elapsed >= 700) {
+      clearInterval(interval);
+    }
+  }, 50);
+}
+
+function updateCardObstacles() {
+  if (!world) return;
+  
+  // Remove old card obstacles
+  cardBodies.forEach(body => {
+    World.remove(world, body);
+  });
+  cardBodies = [];
+  
+  // Re-add obstacles with current dimensions
+  const cardElements = document.querySelectorAll('.physics-obstacle');
+  const scrollY = window.scrollY;
+  const scrollX = window.scrollX;
+  
+  cardElements.forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      const docX = rect.left + scrollX + rect.width / 2;
+      const docY = rect.top + scrollY + rect.height / 2;
+      
+      const body = Bodies.rectangle(docX, docY, rect.width, rect.height, {
+        isStatic: true,
+        label: 'card-obstacle'
+      });
+      cardBodies.push(body);
+      World.add(world, body);
+    }
+  });
+  
+  updateDiagnostics();
 }

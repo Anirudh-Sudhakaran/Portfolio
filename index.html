@@ -82,6 +82,7 @@
       </div>
       <div class="flex items-center space-x-6 text-sm font-medium">
         <a href="#summary" class="hover:text-neoncyan transition-colors duration-200">About</a>
+        <a href="#skills" class="hover:text-neoncyan transition-colors duration-200">Skills</a>
         <a href="#experience" class="hover:text-neoncyan transition-colors duration-200">Experience</a>
         <a href="#clientele" class="hover:text-neoncyan transition-colors duration-200">Client Journey</a>
         <a href="#success-story" class="hover:text-neoncyan transition-colors duration-200">Success Story</a>
@@ -164,6 +165,28 @@
                 Proven ability to collaborate effectively with various teams to deliver structured, outcome-focused change, improve data visibility, and enable business continuity in fast-paced environments.
               </p>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="py-20 reveal">
+      <div class="max-w-4xl mx-auto">
+        <div class="flex items-center space-x-3 mb-10">
+          <h2 class="text-2xl md:text-3xl font-bold font-display text-white">Technical Skills</h2>
+          <div class="h-[1px] flex-1 bg-gradient-to-r from-neongreen to-transparent"></div>
+        </div>
+
+        <!-- Collapsible Skills Dock -->
+        <div id="skills-dock-container" class="p-8 rounded-2xl glass-panel border border-white/5 physics-obstacle flex flex-col items-center justify-center relative">
+          <!-- Hidden grid layout that acts as a structural reference for position calculation -->
+          <div id="skills-dock-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-4 w-full max-w-3xl opacity-0 pointer-events-none transition-opacity duration-500">
+            <!-- Slots dynamically generated here by JS -->
+          </div>
+          <!-- Centered overlay hint shown when section is collapsed -->
+          <div id="skills-dock-hint" class="absolute inset-0 flex items-center justify-center pointer-events-none text-xs font-tech text-gray-500 tracking-wider transition-opacity duration-300">
+            [ SECTION UNFOCUSED - SKILLS FLOATING IN ARENA ]
           </div>
         </div>
       </div>
@@ -372,8 +395,8 @@
                 <!-- Sidebar Metadata -->
                 <div class="md:col-span-4 space-y-6">
                   <div class="space-y-2">
-                    <span class="text-[10px] font-tech text-neonpink tracking-widest uppercase">Target Role</span>
-                    <h3 class="text-lg font-bold text-white leading-tight">Implementation Specialist</h3>
+                    <span class="text-[10px] font-tech text-neonpink tracking-widest uppercase">Target Role / Context</span>
+                    <h3 class="text-lg font-bold text-white leading-tight">Bank of England Alignment</h3>
                     <p class="text-xs text-gray-400 font-light leading-relaxed">Competency-based reflection highlighting operational improvement, business analysis, and technology-led change.</p>
                   </div>
                   
@@ -382,7 +405,7 @@
                   <div class="space-y-3">
                     <span class="text-[10px] font-tech text-neonpink tracking-widest uppercase block">Core Strengths</span>
                     <div class="flex flex-wrap gap-2">
-                      <span class="text-[10px] font-tech text-neonpink border border-neonpink/30 bg-neonpink/5 px-2.5 py-1 rounded-full tracking-wider uppercase shadow-[0_0_8px_rgba(255,110,199,0.15)]">12+ Years Business Analysis</span>
+                      <span class="text-[10px] font-tech text-neonpink border border-neonpink/30 bg-neonpink/5 px-2.5 py-1 rounded-full tracking-wider uppercase shadow-[0_0_8px_rgba(255,110,199,0.15)]">12+ Years BA</span>
                       <span class="text-[10px] font-tech text-neoncyan border border-neoncyan/30 bg-neoncyan/5 px-2.5 py-1 rounded-full tracking-wider uppercase shadow-[0_0_8px_rgba(0,240,255,0.15)]">Operational Improvement</span>
                       <span class="text-[10px] font-tech text-neonpurple border border-neonpurple/30 bg-neonpurple/5 px-2.5 py-1 rounded-full tracking-wider uppercase shadow-[0_0_8px_rgba(189,0,255,0.15)]">Change Delivery</span>
                       <span class="text-[10px] font-tech text-neonyellow border border-neonyellow/30 bg-neonyellow/5 px-2.5 py-1 rounded-full tracking-wider uppercase">SharePoint Migration</span>
@@ -406,9 +429,9 @@
                 <!-- Star Content -->
                 <div class="md:col-span-8 space-y-6">
                   <div>
-                    <span class="text-[10px] font-tech text-neoncyan tracking-widest uppercase block mb-1">Context</span>
+                    <span class="text-[10px] font-tech text-neoncyan tracking-widest uppercase block mb-1">Question</span>
                     <h4 class="text-base font-bold text-white tracking-wide leading-relaxed border-l-2 border-neoncyan pl-3">
-                      My skills and experience that make me well-suited for a Business Analyst role.
+                      Tell us how your skills and experience make you well-suited for this role. Please reflect on the advertised role requirements when providing your answer.
                     </h4>
                   </div>
                   
@@ -416,7 +439,7 @@
                     <div>
                       <span class="text-[10px] font-tech text-neonpurple tracking-widest uppercase block mb-1 font-bold">Situation & Suitability</span>
                       <p>
-                        A key strength I bring is my ability to <strong class="text-neoncyan">translate ambiguous business needs into clear, actionable solutions</strong>, ensuring alignment between stakeholders and technical teams. This aligns closely with every organisation's focus on effective problem solving and delivering high quality outcomes.
+                        A key strength I bring is my ability to <strong class="text-neoncyan">translate ambiguous business needs into clear, actionable solutions</strong>, ensuring alignment between stakeholders and technical teams. This aligns closely with the Bank of England’s focus on effective problem solving and delivering high quality outcomes.
                       </p>
                     </div>
 
@@ -451,8 +474,8 @@
                 <!-- Sidebar Metadata -->
                 <div class="md:col-span-4 space-y-6">
                   <div class="space-y-2">
-                    <span class="text-[10px] font-tech text-neonpink tracking-widest uppercase">Target Role</span>
-                    <h3 class="text-lg font-bold text-white leading-tight">Stakeholder Management</h3>
+                    <span class="text-[10px] font-tech text-neonpink tracking-widest uppercase">Target Role / Context</span>
+                    <h3 class="text-lg font-bold text-white leading-tight">Challenging Stakeholders</h3>
                     <p class="text-xs text-gray-400 font-light leading-relaxed">Cross-functional negotiation involving senior leaders, strict compliance groups, and external teams across geographies.</p>
                   </div>
                   
@@ -485,9 +508,9 @@
                 <!-- Star Content -->
                 <div class="md:col-span-8 space-y-6">
                   <div>
-                    <span class="text-[10px] font-tech text-neoncyan tracking-widest uppercase block mb-1">Context</span>
+                    <span class="text-[10px] font-tech text-neoncyan tracking-widest uppercase block mb-1">Question</span>
                     <h4 class="text-base font-bold text-white tracking-wide leading-relaxed border-l-2 border-neoncyan pl-3">
-                      An example of a time when I worked with challenging stakeholders and how I managed the relationship and achieved a positive outcome.
+                      Provide an example of a time when you worked with challenging stakeholders. If possible, include a situation involving a senior stakeholder and explain how you managed the relationship and achieved a positive outcome.
                     </h4>
                   </div>
                   
@@ -530,7 +553,7 @@
                 <!-- Sidebar Metadata -->
                 <div class="md:col-span-4 space-y-6">
                   <div class="space-y-2">
-                    <span class="text-[10px] font-tech text-neonpink tracking-widest uppercase">Target Role</span>
+                    <span class="text-[10px] font-tech text-neonpink tracking-widest uppercase">Target Role / Context</span>
                     <h3 class="text-lg font-bold text-white leading-tight">Complex Change Initiative</h3>
                     <p class="text-xs text-gray-400 font-light leading-relaxed">End-to-end design and commercial execution of an operational charging process within City & Guilds.</p>
                   </div>
@@ -564,9 +587,9 @@
                 <!-- Star Content -->
                 <div class="md:col-span-8 space-y-6">
                   <div>
-                    <span class="text-[10px] font-tech text-neoncyan tracking-widest uppercase block mb-1">Context</span>
+                    <span class="text-[10px] font-tech text-neoncyan tracking-widest uppercase block mb-1">Question</span>
                     <h4 class="text-base font-bold text-white tracking-wide leading-relaxed border-l-2 border-neoncyan pl-3">
-                      My involvement in delivering a significant or complex change initiative within a business area describing the nature of the change, what responsibilities I held and the impact my contribution had on the final outcome.
+                      Describe your involvement in delivering a significant or complex change initiative within a business area. What was the nature of the change, what responsibilities did you hold and what impact did your contribution have on the final outcome?
                     </h4>
                   </div>
                   
@@ -591,7 +614,7 @@
                     <div>
                       <span class="text-[10px] font-tech text-neonpurple tracking-widest uppercase block mb-1 font-bold">Outcome & Impact</span>
                       <p>
-                        The process moved the business from an ad-hoc approach to a highly controlled, repeatable, and auditable operation. Crucially, the system successfully recovered <strong class="text-neoncyan">close to £200,000 in invoiced charges</strong> over the summer of 2025, proving both operational governance and significant commercial value.
+                        The process moved the business from an ad-hoc approach to a highly controlled, repeatable, and auditable operation. Crucially, the system successfully recovered <strong class="text-neoncyan">close to £200,000 in invoiced charges</strong> over the summer period, proving both operational governance and significant commercial value.
                       </p>
                     </div>
                   </div>
