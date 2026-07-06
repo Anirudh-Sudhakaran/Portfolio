@@ -50,6 +50,8 @@ let skillBodies = [];
 let mouseConstraint;
 let mouse;
 let isSkillsDocked = false;
+let isSkillsReleasing = false;
+let releaseTargets = [];
 
 // Helper to draw rounded rectangle in Canvas
 function drawRoundedRect(ctx, x, y, width, height, radius) {
@@ -1070,6 +1072,29 @@ Matter.Events.on(engine, 'afterUpdate', () => {
         });
 
         Matter.Body.setAngle(body, body.angle * 0.85);
+        Matter.Body.setVelocity(body, { x: 0, y: 0 });
+        Matter.Body.setAngularVelocity(body, 0);
+      }
+    });
+    return;
+  }
+
+  // If releasing, animate back to distributed locations
+  if (isSkillsReleasing) {
+    skillBodies.forEach((body, index) => {
+      if (mouseConstraint.body === body) {
+        body.collisionFilter.mask = 0xFFFFFFFF;
+        return;
+      }
+      const target = releaseTargets[index];
+      if (target) {
+        const dx = target.x - body.position.x;
+        const dy = target.y - body.position.y;
+        Matter.Body.setPosition(body, {
+          x: body.position.x + dx * 0.08,
+          y: body.position.y + dy * 0.08
+        });
+        Matter.Body.setAngle(body, body.angle * 0.95);
         Matter.Body.setVelocity(body, { x: 0, y: 0 });
         Matter.Body.setAngularVelocity(body, 0);
       }
