@@ -413,13 +413,13 @@ function initGlobe() {
       bulletListHtml += `<li>${bullet}</li>`;
     });
 
-    popup.innerHTML = `<button class="close-btn">✕</button>
+    popup.innerHTML = `<button class="close-btn" aria-label="Close details popup" role="button">✕</button>
       <div class="title flex items-center justify-between gap-2">
-        <button class="prev-pin-btn text-neoncyan hover:text-white transition-colors cursor-pointer mr-1 focus:outline-none" title="Previous Client">
+        <button class="prev-pin-btn text-neoncyan hover:text-white transition-colors cursor-pointer mr-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-neoncyan" title="Previous Client" aria-label="Navigate to previous client location" role="button">
           <i class="fa-solid fa-chevron-left text-xs"></i>
         </button>
         <span class="flex-1 text-center">${clientHeading} - ${p.location}</span>
-        <button class="next-pin-btn text-neoncyan hover:text-white transition-colors cursor-pointer ml-1 focus:outline-none" title="Next Client">
+        <button class="next-pin-btn text-neoncyan hover:text-white transition-colors cursor-pointer ml-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-neoncyan" title="Next Client" aria-label="Navigate to next client location" role="button">
           <i class="fa-solid fa-chevron-right text-xs"></i>
         </button>
       </div>
@@ -703,6 +703,37 @@ function initGlobe() {
       }
     }
   });
+
+  // Keyboard accessibility keydown listeners for globe rotation & pin selection
+  canvas.addEventListener('keydown', (e) => {
+    let r = projection.rotate();
+    const step = 6; // degrees per keypress
+    if (e.key === 'ArrowLeft') {
+      projection.rotate([r[0] - step, r[1], r[2]]);
+      e.preventDefault();
+    } else if (e.key === 'ArrowRight') {
+      projection.rotate([r[0] + step, r[1], r[2]]);
+      e.preventDefault();
+    } else if (e.key === 'ArrowUp') {
+      projection.rotate([r[0], r[1] + step, r[2]]);
+      e.preventDefault();
+    } else if (e.key === 'ArrowDown') {
+      projection.rotate([r[0], r[1] - step, r[2]]);
+      e.preventDefault();
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      if (activePin) {
+        const idx = clients.findIndex(c => c.id === activePin.id);
+        activePin = clients[(idx + 1) % clients.length];
+        renderPopup(activePin);
+        startCenterAnimation(activePin.lon, activePin.lat);
+      } else {
+        activePin = clients[0];
+        renderPopup(activePin);
+        startCenterAnimation(activePin.lon, activePin.lat);
+      }
+      e.preventDefault();
+    }
+  }); 
 
   // Popup navigation and close button listener delegation
   popup.addEventListener('click', (e) => {
@@ -1150,6 +1181,7 @@ window.addEventListener('load', () => {
   initGlobe();
   initSuccessStories();
   initSkillsObserver();
+  initAccessibilityToggles();
   document.body.classList.add('js-active');
 });
 
@@ -1456,4 +1488,51 @@ function updateCardObstacles() {
   });
   
   updateDiagnostics();
+}
+
+/* --- Accessibility Toggle Handlers --- */
+function initAccessibilityToggles() {
+  // 1. Technical Skills View Toggle
+  const skillsBtn = document.getElementById('btn-toggle-skills-view');
+  const skillsContainer = document.getElementById('skills');
+  const skillsDock = document.getElementById('skills-dock-container');
+  
+  if (skillsBtn && skillsContainer && skillsDock) {
+    skillsBtn.addEventListener('click', () => {
+      const isShowingList = skillsContainer.classList.contains('show-static-list');
+      if (isShowingList) {
+        skillsContainer.classList.remove('show-static-list');
+        skillsBtn.textContent = 'View as List';
+        skillsBtn.setAttribute('aria-expanded', 'false');
+      } else {
+        skillsContainer.classList.add('show-static-list');
+        skillsBtn.textContent = 'View Interactive Arena';
+        skillsBtn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  }
+  // 2. Client Journey View Toggle
+  const clientBtn = document.getElementById('btn-toggle-client-view');
+  const clientContainer = document.getElementById('clientele');
+  const clientMap = document.getElementById('client-map');
+  const globeCanvasContainer = clientMap ? clientMap.parentNode : null; // The glass-panel wrapper
+  const clientList = document.getElementById('client-journey-static-list');
+  if (clientBtn && clientContainer && globeCanvasContainer && clientList) {
+    clientBtn.addEventListener('click', () => {
+      const isShowingList = clientContainer.classList.contains('show-static-list');
+      if (isShowingList) {
+        clientContainer.classList.remove('show-static-list');
+        clientBtn.textContent = 'View as List';
+        clientBtn.setAttribute('aria-expanded', 'false');
+        globeCanvasContainer.style.display = 'block';
+        clientList.classList.add('hidden');
+      } else {
+        clientContainer.classList.add('show-static-list');
+        clientBtn.textContent = 'View Interactive Globe';
+        clientBtn.setAttribute('aria-expanded', 'true');
+        globeCanvasContainer.style.display = 'none';
+        clientList.classList.remove('hidden');
+      }
+    });
+  }
 }

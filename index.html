@@ -65,7 +65,7 @@
 <body class="bg-darkbg text-gray-100 min-h-screen">
 
   <!-- Matter.js Physics Background Canvas -->
-  <canvas id="physics-canvas"></canvas>
+  <canvas id="physics-canvas" aria-hidden="true"></canvas>
 
   <!-- Glowing Background Orbs -->
   <div class="bg-glow-purple top-[10%] left-[-5%]"></div>
@@ -181,13 +181,18 @@
     <!-- Skills Section -->
     <section id="skills" class="py-20 reveal">
       <div class="max-w-4xl mx-auto">
-        <div class="flex items-center space-x-3 mb-10">
-          <h2 class="text-2xl md:text-3xl font-bold font-display text-white">Technical Skills</h2>
-          <div class="h-[1px] flex-1 bg-gradient-to-r from-neongreen to-transparent"></div>
+         <div class="flex items-center justify-between mb-10">
+          <div class="flex items-center space-x-3 flex-1">
+            <h2 class="text-2xl md:text-3xl font-bold font-display text-white">Technical Skills</h2>
+            <div class="h-[1px] flex-1 bg-gradient-to-r from-neongreen to-transparent"></div>
+          </div>
+          <button id="btn-toggle-skills-view" class="ml-4 px-3 py-1.5 rounded-lg border border-neongreen/30 bg-neongreen/10 text-neongreen hover:bg-neongreen hover:text-black transition-all text-xs font-tech focus-visible:ring-2 focus-visible:ring-neongreen focus-visible:outline-none cursor-pointer" aria-label="Toggle between interactive arena and text list of technical skills" role="button">
+            View as List
+          </button>
         </div>
 
         <!-- Collapsible Skills Dock -->
-        <div id="skills-dock-container" class="p-8 rounded-2xl glass-panel border border-white/5 physics-obstacle flex flex-col items-center justify-center relative">
+        <div id="skills-dock-container" class="p-8 rounded-2xl glass-panel border border-white/5 physics-obstacle flex flex-col items-center justify-center relative" role="region" aria-label="Technical Skills Dock Area">
           <!-- Hidden grid layout that acts as a structural reference for position calculation -->
           <div id="skills-dock-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-4 w-full max-w-3xl opacity-0 pointer-events-none transition-opacity duration-500">
             <!-- Slots dynamically generated here by JS -->
@@ -381,33 +386,82 @@
     <!-- Client Journey Section -->
     <section id="clientele" class="py-20 reveal">
       <div class="max-w-4xl mx-auto">
-        <div class="flex items-center space-x-3 mb-10">
-          <h2 class="text-2xl md:text-3xl font-bold font-display text-white">Client Journey</h2>
-          <div class="h-[1px] flex-1 bg-gradient-to-r from-neoncyan to-transparent"></div>
+        <div class="flex items-center justify-between mb-10">
+          <div class="flex items-center space-x-3 flex-1">
+            <h2 class="text-2xl md:text-3xl font-bold font-display text-white">Client Journey</h2>
+            <div class="h-[1px] flex-1 bg-gradient-to-r from-neoncyan to-transparent"></div>
+          </div>
+          <button id="btn-toggle-client-view" class="ml-4 px-3 py-1.5 rounded-lg border border-neoncyan/30 bg-neoncyan/10 text-neoncyan hover:bg-neoncyan hover:text-black transition-all text-xs font-tech focus-visible:ring-2 focus-visible:ring-neoncyan focus-visible:outline-none cursor-pointer" aria-label="Toggle between interactive globe map and text list of client locations" role="button">
+            View as List
+          </button>
         </div>
         <!-- Interactive Neon Globe / Map -->
         <div class="mb-8">
-          <div class="p-6 rounded-2xl glass-panel border border-white/5 physics-obstacle">
+          <div class="p-6 rounded-2xl glass-panel border border-white/5 physics-obstacle" role="region" aria-label="Interactive Client Locations Map">
             <div class="flex items-center justify-between mb-4">
               <h4 class="text-sm font-semibold text-white">Client Journey Map</h4>
-              <span class="text-xs text-gray-400">Interactive neon world map — click pins to view experience</span>
+              <span class="text-xs text-gray-400">Interactive neon world map — click pins to view experience (Focus & use arrow keys to rotate)</span>
             </div>
             <div id="client-map" class="w-full h-[420px] md:h-[360px] relative">
-              <canvas id="globe-canvas" class="w-full h-full rounded-lg" width="900" height="480"></canvas>
-              <div id="map-popup" class="map-popup hidden"></div>
+              <canvas id="globe-canvas" class="w-full h-full rounded-lg cursor-grab active:cursor-grabbing focus-visible:outline-none" width="900" height="480" role="img" aria-label="Interactive 3D neon world globe displaying Anirudh's global client journey locations including UK, Mauritius, and India." tabindex="0"></canvas>
+              <div id="map-popup" class="map-popup hidden" role="dialog" aria-modal="false" aria-label="Client Experience Details"></div>
               <!-- Vertical Zoom Slider Control Panel -->
               <div class="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center space-y-3 z-20 pointer-events-auto bg-black/55 backdrop-blur-md px-2.5 py-4 rounded-xl border border-white/10 shadow-2xl">
-                <button id="btn-zoom-in" class="text-neoncyan hover:text-white transition-colors cursor-pointer focus:outline-none" title="Zoom In">
+                <button id="btn-zoom-in" class="text-neoncyan hover:text-white transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-neoncyan focus-visible:rounded" title="Zoom In" aria-label="Zoom in on globe" role="button">
                   <i class="fa-solid fa-plus text-xs"></i>
                 </button>
                 <div class="h-24 flex items-center justify-center">
-                  <input type="range" id="globe-zoom" min="0.6" max="3.0" step="0.05" value="1.0" class="vertical-slider cursor-pointer accent-neoncyan" title="Globe Zoom">
+                  <input type="range" id="globe-zoom" min="0.6" max="3.0" step="0.05" value="1.0" class="vertical-slider cursor-pointer accent-neoncyan focus-visible:ring-2 focus-visible:ring-neoncyan" title="Globe Zoom" aria-label="Globe zoom slider">
                 </div>
-                <button id="btn-zoom-out" class="text-neoncyan hover:text-white transition-colors cursor-pointer focus:outline-none" title="Zoom Out">
+                <button id="btn-zoom-out" class="text-neoncyan hover:text-white transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-neoncyan focus-visible:rounded" title="Zoom Out" aria-label="Zoom out of globe" role="button">
                   <i class="fa-solid fa-minus text-xs"></i>
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+        <!-- Static Fallback Client Journey List (Accessible to Screen Readers / SEO / resume-scanners) -->
+        <div id="client-journey-static-list" class="static-client-list grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 hidden">
+          <!-- Client Card 1 -->
+          <div class="p-6 rounded-2xl glass-panel border border-white/5 relative">
+            <span class="text-[10px] font-tech text-neongreen tracking-widest uppercase block mb-1">Farmers Insurance (Hyderabad, India)</span>
+            <h3 class="text-base font-bold text-white tracking-wide mb-3">eAgent Dashboard - Application Support & Stability</h3>
+            <ul class="space-y-2 text-xs text-gray-300 font-light list-disc pl-4 leading-relaxed">
+              <li>Improved application stability by 20% through proactive monitoring and rapid issue remediation.</li>
+              <li>Developed and maintained key application modules and change requests, ensuring high-quality code delivery.</li>
+              <li>Monitored server health and application performance, daily reviews, and reports.</li>
+            </ul>
+          </div>
+          
+          <!-- Client Card 2 -->
+          <div class="p-6 rounded-2xl glass-panel border border-white/5 relative">
+            <span class="text-[10px] font-tech text-neonpurple tracking-widest uppercase block mb-1">Farmers Insurance (Woodland Hills, USA)</span>
+            <h3 class="text-base font-bold text-white tracking-wide mb-3">eFolio Dashboard - Change Request Delivery</h3>
+            <ul class="space-y-2 text-xs text-gray-300 font-light list-disc pl-4 leading-relaxed">
+              <li>Developed and enhanced business-critical application components, delivering change requests with 100% adherence.</li>
+              <li>Partnered with client stakeholders to translate business requirements into scalable technical solutions.</li>
+              <li>Implemented business logic and enhancements, contributing to greater process efficiency.</li>
+            </ul>
+          </div>
+          <!-- Client Card 3 -->
+          <div class="p-6 rounded-2xl glass-panel border border-white/5 relative">
+            <span class="text-[10px] font-tech text-neoncyan tracking-widest uppercase block mb-1">AT&T (Hyderabad, India)</span>
+            <h3 class="text-base font-bold text-white tracking-wide mb-3">Common Services Integration - REST APIs</h3>
+            <ul class="space-y-2 text-xs text-gray-300 font-light list-disc pl-4 leading-relaxed">
+              <li>Developed and enhanced common services application modules and utility packages.</li>
+              <li>Created and deployed secure SOAP/REST APIs, reducing integration overhead and error rates.</li>
+              <li>Delivered technical documentation and test cases, increasing test coverage.</li>
+            </ul>
+          </div>
+          <!-- Client Card 4 -->
+          <div class="p-6 rounded-2xl glass-panel border border-white/5 relative">
+            <span class="text-[10px] font-tech text-neonpink tracking-widest uppercase block mb-1">City & Guilds (London, UK)</span>
+            <h3 class="text-base font-bold text-white tracking-wide mb-3">Operations & Transformation Lead</h3>
+            <ul class="space-y-2 text-xs text-gray-300 font-light list-disc pl-4 leading-relaxed">
+              <li>Led early-stage analysis and delivery of 5 transformation and process improvement initiatives.</li>
+              <li>Facilitated discovery workshops and developed process models reducing inefficiencies by 95%.</li>
+              <li>Established Power BI dashboard visibility, improving tracking and stakeholder adoption.</li>
+            </ul>
           </div>
         </div>
       </div> 
@@ -822,7 +876,7 @@
         </div>
       </div>
     </section>
-    
+
     <!-- Credentials (Certifications & Education) Section -->
     <section id="credentials" class="py-20 reveal">
       <div class="max-w-4xl mx-auto">
