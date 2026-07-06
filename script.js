@@ -1150,6 +1150,7 @@ window.addEventListener('load', () => {
   initGlobe();
   initSuccessStories();
   initSkillsObserver();
+  document.body.classList.add('js-active');
 });
 
 // Re-init on window resizing (with debounce)
