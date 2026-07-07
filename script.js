@@ -855,9 +855,11 @@ function initPhysics() {
 
   // 1. Create Boundaries (Walls)
   const wallThickness = 100;
+  const heroPara = document.querySelector('#hero p');
+  const heroParaBottom = heroPara ? (heroPara.getBoundingClientRect().bottom + window.scrollY + 16) : 550;
   const leftWall = Bodies.rectangle(-wallThickness/2, height/2, wallThickness, height, { isStatic: true });
   const rightWall = Bodies.rectangle(width + wallThickness/2, height/2, wallThickness, height, { isStatic: true });
-  const ceiling = Bodies.rectangle(width/2, -wallThickness/2, width, wallThickness, { isStatic: true });
+  const ceiling = Bodies.rectangle(width/2, heroParaBottom - wallThickness/2, width, wallThickness, { isStatic: true });
   const floor = Bodies.rectangle(width/2, height + wallThickness/2, width, wallThickness, { isStatic: true });
   
   walls = [leftWall, rightWall, ceiling, floor];
@@ -904,9 +906,12 @@ function initPhysics() {
     
     // Group distribution
     if (index < 8) {
-      // Hero area
-      spawnYMin = 150;
-      spawnYMax = window.innerHeight - 150;
+      // Hero area - Spawning restricted below hero paragraph ceiling
+      spawnYMin = heroParaBottom + 30;
+      spawnYMax = window.innerHeight - 100;
+      if (spawnYMax <= spawnYMin) {
+        spawnYMax = spawnYMin + 200;
+      }
     } else if (index < 16) {
       // Experience area
       spawnYMin = window.innerHeight + 100;
@@ -1077,6 +1082,9 @@ function renderCanvas() {
 Matter.Events.on(engine, 'afterUpdate', () => {
   if (!mouseConstraint) return;
 
+  const heroPara = document.querySelector('#hero p');
+  const heroParaBottom = heroPara ? (heroPara.getBoundingClientRect().bottom + window.scrollY + 16) : 550;
+  
   // If docked, animate to slots
   if (isSkillsDocked) {
     const slots = document.querySelectorAll('.skills-slot');
@@ -1134,6 +1142,7 @@ Matter.Events.on(engine, 'afterUpdate', () => {
   }
 
   skillBodies.forEach(body => {
+        
     // 1. Cap maximum velocity to prevent tunnel issues
     const maxSpeed = 4.5;
     if (body.speed > maxSpeed) {
@@ -1157,11 +1166,12 @@ Matter.Events.on(engine, 'afterUpdate', () => {
     
     // 3. Soft screen bounce adjustment (teleport wrap fallback if walls failed)
     const padding = 20;
+    const currentCeiling = heroParaBottom;
     if (body.position.x < -padding || body.position.x > canvas.width + padding ||
-        body.position.y < -padding || body.position.y > canvas.height + padding) {
+        body.position.y < currentCeiling - padding || body.position.y > canvas.height + padding) {
       Matter.Body.setPosition(body, {
         x: Math.min(Math.max(body.position.x, 50), canvas.width - 50),
-        y: Math.min(Math.max(body.position.y, 50), canvas.height - 50)
+        y: Math.min(Math.max(body.position.y, currentCeiling + 30), canvas.height - 50)
       });
     }
   });
@@ -1433,17 +1443,58 @@ function undockSkills() {
   
   transitionObstacles();
   
-  // Scatter bills back into space
-  skillBodies.forEach(body => {
-    body.collisionFilter.mask = 0xFFFFFFFF; // Restore collision
+// Calculate release targets distributed across the entire webpage height
+  releaseTargets = [];
+  const docWidth = window.innerWidth;
+  const docHeight = Math.max(
+    document.documentElement.scrollHeight,
+    document.body.scrollHeight,
+    window.innerHeight,
+    2000
+  );
+  
+  const heroPara = document.querySelector('#hero p');
+  const heroParaBottom = heroPara ? (heroPara.getBoundingClientRect().bottom + window.scrollY + 16) : 550;
+  skillBodies.forEach((body, index) => {
+    let spawnYMin = 100;
+    let spawnYMax = docHeight - 200;
     
-    const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 2 + 1.2;
-    Matter.Body.setVelocity(body, {
-      x: Math.cos(angle) * speed,
-      y: Math.sin(angle) * speed
-    });
+    if (index < 8) {
+      spawnYMin = heroParaBottom + 30;
+      spawnYMax = window.innerHeight - 100;
+      if (spawnYMax <= spawnYMin) {
+        spawnYMax = spawnYMin + 200;
+      }
+    } else if (index < 16) {
+      spawnYMin = window.innerHeight + 100;
+      spawnYMax = window.innerHeight * 2.2;
+    } else {
+      spawnYMin = window.innerHeight * 2.2;
+      spawnYMax = docHeight - 150;
+    }
+    
+    const rx = Math.random() * (docWidth - 120) + 60;
+    const ry = Math.random() * (spawnYMax - spawnYMin) + spawnYMin;
+    
+    releaseTargets.push({ x: rx, y: ry });
+    body.collisionFilter.mask = 0; // Disable collisions during release flight
   });
+  
+  // Transition end: restore collisions and apply drift
+  setTimeout(() => {
+    if (isSkillsReleasing) {
+      isSkillsReleasing = false;
+      skillBodies.forEach(body => {
+        body.collisionFilter.mask = 0xFFFFFFFF; // Restore collision
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 0.6 + 0.45; // Gentle float speed
+        Matter.Body.setVelocity(body, {
+          x: Math.cos(angle) * speed,
+          y: Math.sin(angle) * speed
+        });
+      });
+    }
+  }, 1200);
 }
 
 // Update Matter.js static card obstacles dynamically during height transition
