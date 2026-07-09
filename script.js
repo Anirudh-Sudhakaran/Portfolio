@@ -20,16 +20,17 @@ const skillsData = [
   { name: "Process Modelling", category: "modelling" },
   { name: "KPI Design", category: "analytics" },
   { name: "Continuous Improvement", category: "delivery" },
-  { name: "UAT", category: "delivery" },
-  { name: "R / R Shiny", category: "analytics" },
+  { name: "User Acceptance Testing", category: "delivery" },
+  { name: "R Analytics", category: "analytics" },
   { name: "SAP", category: "analytics" },
   { name: "Visio", category: "modelling" },
   { name: "Miro", category: "modelling" },
   { name: "Business Analysis", category: "modelling" },
-  { name: "Automation", category: "automation" },
+  { name: "Workflow Automation", category: "automation" },
   { name: "Project Management", category: "delivery" },
+  { name: "Lean Six-Sigma", category: "delivery" },
   { name: "SWOT", category: "analytics" },
-  { name: "RCA", category: "analytics" },
+  { name: "Root Cause Analysis", category: "analytics" },
   { name: "SDLC", category: "delivery" }
 ];
 
